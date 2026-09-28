@@ -7,7 +7,11 @@ export const env = createEnv({
    * isn't built with invalid env vars.
    */
   server: {
-    DATABASE_URL: z.string().url(),
+    DATABASE_URL: z.string().min(1),
+    GROQ_API_KEY: z.string().min(1).optional(),
+    GROQ_MODEL: z.string().default("openai/gpt-oss-20b"),
+    MAX_RESUMES_PER_RUN: z.coerce.number().int().positive().default(100),
+    GROQ_CONCURRENCY: z.coerce.number().int().min(1).max(10).default(3),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
@@ -28,6 +32,10 @@ export const env = createEnv({
    */
   runtimeEnv: {
     DATABASE_URL: process.env.DATABASE_URL,
+    GROQ_API_KEY: process.env.GROQ_API_KEY,
+    GROQ_MODEL: process.env.GROQ_MODEL,
+    MAX_RESUMES_PER_RUN: process.env.MAX_RESUMES_PER_RUN,
+    GROQ_CONCURRENCY: process.env.GROQ_CONCURRENCY,
     NODE_ENV: process.env.NODE_ENV,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },

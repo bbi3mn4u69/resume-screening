@@ -1,21 +1,91 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-    provider = "prisma-client-js"
-    output   = "../generated/prisma"
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
-model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+model Resume {
+  id               String   @id @default(cuid())
+  externalId       String?
+  sourceFileName   String?
+  sourceRow        Int?
+  originalCategory String?
+  datasetName      String?
+  rawText          String
+  sanitizedText    String
+  resumeHtml       String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
-    @@index([name])
+  evaluations ResumeEvaluation[]
+
+  @@unique([datasetName, externalId])
+  @@index([externalId])
+  @@index([originalCategory])
+  @@index([createdAt])
+}
+
+model Job {
+  id                   String   @id @default(cuid())
+  title                String
+  description          String
+  extractedProfileJson String
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  screeningRuns ScreeningRun[]
+}
+
+model ScreeningRun {
+  id                      String    @id @default(cuid())
+  jobId                   String
+  status                  String    @default("PENDING")
+  modelName               String
+  promptVersion           String    @default("v1")
+  totalCandidates         Int       @default(0)
+  processedCount          Int       @default(0)
+  failedCount             Int       @default(0)
+  sourceCandidates        Int       @default(0)
+  originalInputCharacters Int       @default(0)
+  filteredInputCharacters Int       @default(0)
+  startedAt               DateTime?
+  completedAt             DateTime?
+  createdAt               DateTime  @default(now())
+
+  job         Job                @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  evaluations ResumeEvaluation[]
+
+  @@index([jobId])
+  @@index([createdAt])
+}
+
+model ResumeEvaluation {
+  id                      String   @id @default(cuid())
+  runId                   String
+  resumeId                String
+  status                  String   @default("PENDING")
+  preScreenScore          Int?
+  fitScore                Int?
+  matchLabel              String?
+  confidence              Float?
+  matchedRequirementsJson String?
+  missingRequirementsJson String?
+  supportingEvidenceJson  String?
+  summary                 String?
+  needsHumanReview        Boolean  @default(false)
+  errorMessage            String?
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  run    ScreeningRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  resume Resume       @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@unique([runId, resumeId])
+  @@index([runId, matchLabel])
+  @@index([resumeId])
+  @@index([fitScore])
 }

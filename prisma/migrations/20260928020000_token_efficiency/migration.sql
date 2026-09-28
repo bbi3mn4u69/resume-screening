@@ -1,0 +1,4 @@
+ALTER TABLE "ScreeningRun"
+ADD COLUMN "sourceCandidates" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN "originalInputCharacters" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN "filteredInputCharacters" INTEGER NOT NULL DEFAULT 0;
