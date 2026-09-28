@@ -46,6 +46,7 @@ import { Progress, ProgressLabel } from "~/components/ui/progress";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -120,7 +121,15 @@ function estimateTokens(characters: number) {
   return Math.ceil(characters / 4);
 }
 
-function PreparationProgress({ corpusSize }: { corpusSize: number }) {
+function PreparationProgress({
+  corpusSize,
+  category,
+  categorySize,
+}: {
+  corpusSize: number;
+  category: string | null;
+  categorySize: number;
+}) {
   return (
     <Card className="border-primary/20">
       <CardContent className="flex items-center gap-4 py-5">
@@ -130,8 +139,10 @@ function PreparationProgress({ corpusSize }: { corpusSize: number }) {
         <div>
           <p className="font-medium">Preparing a token-efficient shortlist</p>
           <p className="text-muted-foreground mt-1 text-sm">
-            Extracting job requirements, ranking {corpusSize.toLocaleString()}{" "}
-            resumes locally, and selecting relevant evidence.
+            Extracting job requirements, narrowing {corpusSize.toLocaleString()}{" "}
+            resumes
+            {category ? ` to ${categorySize.toLocaleString()} ${category}` : ""}
+            , then ranking evidence locally.
           </p>
         </div>
       </CardContent>
@@ -169,10 +180,18 @@ function RunProgress({ run }: { run: Run }) {
             {run.processedCount}/{run.totalCandidates}
           </span>
         </Progress>
-        <div className="grid overflow-hidden rounded-lg border sm:grid-cols-3">
+        <div className="grid overflow-hidden rounded-lg border sm:grid-cols-4">
           <div className="border-b p-4 sm:border-r sm:border-b-0">
             <p className="text-muted-foreground text-xs font-medium uppercase">
-              Corpus
+              Dataset
+            </p>
+            <p className="mt-1 font-mono text-xl font-semibold">
+              {run.datasetCandidates.toLocaleString()}
+            </p>
+          </div>
+          <div className="border-b p-4 sm:border-r sm:border-b-0">
+            <p className="text-muted-foreground text-xs font-medium uppercase">
+              Job-type pool
             </p>
             <p className="mt-1 font-mono text-xl font-semibold">
               {run.sourceCandidates.toLocaleString()}
@@ -416,11 +435,16 @@ function RunResults({
                 {run.promptVersion}
               </CardDescription>
             </div>
-            <Badge
-              variant={run.status === "COMPLETED" ? "secondary" : "outline"}
-            >
-              {run.status.toLowerCase()}
-            </Badge>
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="outline">
+                {run.datasetCategory ?? "All job types"}
+              </Badge>
+              <Badge
+                variant={run.status === "COMPLETED" ? "secondary" : "outline"}
+              >
+                {run.status.toLowerCase()}
+              </Badge>
+            </div>
           </div>
           <p className="text-muted-foreground line-clamp-3 text-sm leading-6">
             {run.jobDescription}
@@ -455,7 +479,25 @@ function RunResults({
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
-            <div className="grid overflow-hidden rounded-lg border md:grid-cols-3">
+            <div className="grid overflow-hidden rounded-lg border md:grid-cols-4">
+              <div className="border-b p-5 md:border-r md:border-b-0">
+                <p className="text-muted-foreground text-xs font-medium uppercase">
+                  Job-type pool
+                </p>
+                <p className="mt-1 font-mono text-2xl font-semibold">
+                  {run.sourceCandidates.toLocaleString()}
+                  <span className="text-muted-foreground text-sm font-normal">
+                    {" "}
+                    / {run.datasetCandidates.toLocaleString()}
+                  </span>
+                </p>
+                <p className="text-muted-foreground mt-1 text-xs">
+                  {(
+                    run.datasetCandidates - run.sourceCandidates
+                  ).toLocaleString()}{" "}
+                  resumes excluded by job type
+                </p>
+              </div>
               <div className="border-b p-5 md:border-r md:border-b-0">
                 <p className="text-muted-foreground text-xs font-medium uppercase">
                   Local shortlist
@@ -644,6 +686,7 @@ export function ScreeningWorkspace() {
   const [activeRunId, setActiveRunId] = useState<string>();
   const [jobTitle, setJobTitle] = useState("");
   const [jobDescription, setJobDescription] = useState("");
+  const [screeningCategory, setScreeningCategory] = useState("ALL");
   const [catalogSearch, setCatalogSearch] = useState("");
   const [category, setCategory] = useState("ALL");
   const [page, setPage] = useState(1);
@@ -667,6 +710,12 @@ export function ScreeningWorkspace() {
     { id: viewingResume?.id ?? "" },
     { enabled: Boolean(viewingResume) },
   );
+  const screeningCategoryCount =
+    screeningCategory === "ALL"
+      ? (config.data?.importedCount ?? 0)
+      : (catalog.data?.categories.find(
+          (item) => item.category === screeningCategory,
+        )?.count ?? 0);
   const processRun = api.screening.processRun.useMutation({
     onSettled: async () => {
       setActiveRunId(undefined);
@@ -687,7 +736,11 @@ export function ScreeningWorkspace() {
 
   function analyse(event: FormEvent) {
     event.preventDefault();
-    createRun.mutate({ jobTitle, jobDescription });
+    createRun.mutate({
+      jobTitle,
+      jobDescription,
+      datasetCategory: screeningCategory === "ALL" ? null : screeningCategory,
+    });
   }
 
   function viewRun(id: string) {
@@ -768,6 +821,52 @@ export function ScreeningWorkspace() {
                         />
                       </Field>
                       <Field>
+                        <FieldLabel htmlFor="screening-job-type">
+                          Resume job type
+                        </FieldLabel>
+                        <Select
+                          value={screeningCategory}
+                          onValueChange={(value) =>
+                            setScreeningCategory(value ?? "ALL")
+                          }
+                        >
+                          <SelectTrigger
+                            id="screening-job-type"
+                            className="w-full"
+                            aria-label="Filter the screening pool by dataset job type"
+                          >
+                            <SelectValue>
+                              {screeningCategory === "ALL"
+                                ? "All job types"
+                                : screeningCategory}
+                            </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectGroup>
+                              <SelectItem value="ALL">
+                                All job types (
+                                {config.data?.importedCount.toLocaleString() ??
+                                  "0"}
+                                )
+                              </SelectItem>
+                              {catalog.data?.categories.map((item) => (
+                                <SelectItem
+                                  key={item.category}
+                                  value={item.category}
+                                >
+                                  {item.category} ({item.count})
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                        <FieldDescription>
+                          Filters the database to{" "}
+                          {screeningCategoryCount.toLocaleString()} resumes
+                          before local ranking or Groq calls.
+                        </FieldDescription>
+                      </Field>
+                      <Field>
                         <FieldLabel htmlFor="job-description">
                           Full job ad
                         </FieldLabel>
@@ -801,9 +900,10 @@ export function ScreeningWorkspace() {
                       <ListFilterIcon />
                       <AlertTitle>Token-aware screening</AlertTitle>
                       <AlertDescription>
-                        Local filtering removes zero-evidence resumes, keeps a
-                        10-candidate review floor, and sends at most 6,000
-                        relevant characters per selected resume.
+                        The job-type filter runs first. Local relevance ranking
+                        then removes zero-evidence resumes, keeps a 10-candidate
+                        review floor, and sends at most 6,000 relevant
+                        characters per selected resume.
                       </AlertDescription>
                     </Alert>
                     <Button
@@ -962,6 +1062,10 @@ export function ScreeningWorkspace() {
             {createRun.isPending ? (
               <PreparationProgress
                 corpusSize={config.data?.importedCount ?? 0}
+                category={
+                  screeningCategory === "ALL" ? null : screeningCategory
+                }
+                categorySize={screeningCategoryCount}
               />
             ) : run.isLoading ? (
               <Skeleton className="h-96 w-full" />
@@ -1013,6 +1117,9 @@ export function ScreeningWorkspace() {
                     <div className="min-w-0">
                       <div className="mb-2 flex flex-wrap items-center gap-2">
                         <h2 className="font-semibold">{item.jobTitle}</h2>
+                        <Badge variant="secondary">
+                          {item.datasetCategory ?? "All job types"}
+                        </Badge>
                         <Badge variant="outline">
                           {item.status.toLowerCase()}
                         </Badge>

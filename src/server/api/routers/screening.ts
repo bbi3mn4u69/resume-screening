@@ -17,6 +17,7 @@ const DATASET_NAME = "resume-data-set-v1";
 const createRunInput = z.object({
   jobTitle: z.string().trim().min(2).max(160),
   jobDescription: z.string().trim().min(80).max(30_000),
+  datasetCategory: z.string().trim().min(1).max(120).nullable().default(null),
 });
 
 const resumeCatalogInput = z.object({
@@ -152,24 +153,44 @@ export const screeningRouter = createTRPCRouter({
             "Groq is not configured. Add GROQ_API_KEY and restart the app.",
         });
       }
-      const profile = jobProfileSchema.parse(
-        await extractJobProfile(input.jobTitle, input.jobDescription),
-      );
-      const allResumes = await ctx.db.resume.findMany({
-        where: { datasetName: DATASET_NAME },
-        orderBy: { externalId: "asc" },
-        select: { id: true, sanitizedText: true },
-      });
-      if (allResumes.length === 0) {
+      const [datasetCandidates, allResumes] = await Promise.all([
+        ctx.db.resume.count({ where: { datasetName: DATASET_NAME } }),
+        ctx.db.resume.findMany({
+          where: {
+            datasetName: DATASET_NAME,
+            ...(input.datasetCategory
+              ? { originalCategory: input.datasetCategory }
+              : undefined),
+          },
+          orderBy: { externalId: "asc" },
+          select: {
+            id: true,
+            sanitizedText: true,
+            originalCategory: true,
+          },
+        }),
+      ]);
+      if (datasetCandidates === 0) {
         throw new TRPCError({
           code: "PRECONDITION_FAILED",
           message: "The base resume dataset has not been seeded.",
         });
       }
+      if (allResumes.length === 0) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `No resumes are available for ${input.datasetCategory ?? "the selected job type"}.`,
+        });
+      }
+      const profile = jobProfileSchema.parse(
+        await extractJobProfile(input.jobTitle, input.jobDescription),
+      );
       const ranked = selectCandidatesForScreening(
         profile,
         allResumes,
         env.MAX_RESUMES_PER_RUN,
+        undefined,
+        input.datasetCategory,
       );
       const resumesById = new Map(
         allResumes.map((resume) => [resume.id, resume]),
@@ -195,6 +216,8 @@ export const screeningRouter = createTRPCRouter({
           status: "PROCESSING",
           modelName: env.GROQ_MODEL,
           promptVersion: PROMPT_VERSION,
+          datasetCategory: input.datasetCategory,
+          datasetCandidates,
           sourceCandidates: allResumes.length,
           totalCandidates: resumes.length,
           originalInputCharacters,
@@ -218,6 +241,8 @@ export const screeningRouter = createTRPCRouter({
 
       return {
         runId: run.id,
+        datasetCategory: input.datasetCategory,
+        datasetCandidates,
         sourceCandidates: allResumes.length,
         selectedCandidates: resumes.length,
         originalInputCharacters,
@@ -358,6 +383,8 @@ export const screeningRouter = createTRPCRouter({
         totalCandidates: run.totalCandidates,
         processedCount: run.processedCount,
         failedCount: run.failedCount,
+        datasetCategory: run.datasetCategory,
+        datasetCandidates: run.datasetCandidates,
         sourceCandidates: run.sourceCandidates,
         originalInputCharacters: run.originalInputCharacters,
         filteredInputCharacters: run.filteredInputCharacters,
@@ -419,6 +446,8 @@ export const screeningRouter = createTRPCRouter({
         totalCandidates: run.totalCandidates,
         processedCount: run.processedCount,
         failedCount: run.failedCount,
+        datasetCategory: run.datasetCategory,
+        datasetCandidates: run.datasetCandidates,
         sourceCandidates: run.sourceCandidates,
         originalInputCharacters: run.originalInputCharacters,
         filteredInputCharacters: run.filteredInputCharacters,

@@ -127,11 +127,19 @@ export function getPreScreenScore(profile: JobProfile, resumeText: string) {
 
 export function selectCandidatesForScreening(
   profile: JobProfile,
-  resumes: Array<{ id: string; sanitizedText: string }>,
+  resumes: Array<{
+    id: string;
+    sanitizedText: string;
+    originalCategory?: string | null;
+  }>,
   limit: number,
   minimumCandidates = Math.min(MIN_AI_CANDIDATES, limit),
+  category?: string | null,
 ) {
-  const ranked = resumes
+  const categoryPool = category
+    ? resumes.filter((resume) => resume.originalCategory === category)
+    : resumes;
+  const ranked = categoryPool
     .map((resume) => ({
       id: resume.id,
       preScreenScore: getPreScreenScore(profile, resume.sanitizedText),

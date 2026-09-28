@@ -60,11 +60,12 @@ An HR user can:
 2. Filter the library by the source dataset category.
 3. Open the original formatted resume application.
 4. Enter a real job title and paste the complete job advertisement.
-5. Start a screening run using the configured Groq model.
-6. Review match counts, charts, ranked candidates, confidence, and evidence.
-7. Filter results by match class, sort by fit score, and search by resume ID.
-8. Open a screened resume beside its AI-generated evidence assessment.
-9. Reopen previously processed job advertisements from the history view.
+5. Optionally restrict screening to a matching dataset job type before any AI candidate calls.
+6. Start a screening run using the configured Groq model.
+7. Review match counts, charts, ranked candidates, confidence, and evidence.
+8. Filter results by match class, sort by fit score, and search by resume ID.
+9. Open a screened resume beside its AI-generated evidence assessment.
+10. Reopen previously processed job advertisements from the history view.
 
 The browser never receives the Groq API key or direct database credentials. Screening and persistence happen on the server.
 
@@ -85,13 +86,15 @@ The browser never receives the Groq API key or direct database credentials. Scre
 
 - Requires a job title between 2 and 160 characters.
 - Requires a meaningful job description between 80 and 30,000 characters.
+- Provides a dataset job-type selector with live resume counts and an `All job types` fallback.
 - Accepts responsibilities, required skills, preferred skills, experience, education, certifications, technologies, and domain knowledge.
 - Disables screening if Groq is not configured or the base dataset is empty.
 
-### Two-stage screening
+### Multi-stage screening
 
 - Extracts a structured job profile from the supplied advertisement.
-- Ranks the entire corpus with a deterministic lexical pre-screen.
+- Filters the PostgreSQL resume pool by the reviewer-selected dataset job type.
+- Ranks the selected job-type pool with a deterministic lexical pre-screen.
 - Excludes zero-evidence resumes locally while retaining a minimum 10-candidate recall floor.
 - Sends only the highest-ranked bounded set to Groq.
 - Compresses every selected resume to at most 6,000 job-relevant characters.
@@ -129,7 +132,8 @@ flowchart TD
     B --> C[(Railway PostgreSQL)]
     D[Real job title and description] --> E[Groq job-profile extraction]
     E --> F[Validated structured job profile]
-    C --> G[Load sanitized resume corpus]
+    Q[Reviewer selects dataset job type] --> G[Filter sanitized resumes in PostgreSQL]
+    C --> G
     F --> H[Deterministic lexical pre-screen]
     G --> H
     H --> I[Exclude zero-evidence resumes with a 10-candidate floor]
@@ -160,9 +164,9 @@ Every field is required by the Zod schema. When the advertisement does not provi
 
 The extraction prompt preserves distinctions such as required, preferred, desirable, and nice-to-have. Promotional phrases such as “rockstar” are excluded unless connected to a measurable responsibility.
 
-### 2. Deterministic lexical pre-screen
+### 2. Dataset job-type filter and deterministic lexical pre-screen
 
-Running an AI request for every resume in a large corpus would be slower and more expensive. ClearScreen first calculates a simple deterministic overlap score across the full stored dataset.
+Running an AI request for every resume in a large corpus would be slower and more expensive. ClearScreen first filters PostgreSQL by the optional source dataset job type. It then calculates a simple deterministic overlap score across that smaller pool. `All job types` skips only the category filter and is useful when a role is cross-functional or the appropriate category is unclear.
 
 The term set contains:
 
@@ -216,35 +220,42 @@ Groq returns a numeric fit score but does not choose the displayed match class. 
 
 The job, screening run, source-corpus count, shortlist size, original/filtered character counts, pre-screen score, AI assessment, derived label, errors, and human-review state are stored in PostgreSQL.
 
-Run preparation and AI evaluation are separate tRPC mutations. Once preparation returns a run ID, the browser polls the stored run while Groq evaluations continue. The progress UI displays the genuine processed/total count, corpus size, shortlist size, and measured input reduction rather than a simulated timer.
+Run preparation and AI evaluation are separate tRPC mutations. Once preparation returns a run ID, the browser polls the stored run while Groq evaluations continue. The progress UI displays the genuine processed/total count, full dataset size, selected job-type pool, shortlist size, and measured input reduction rather than a simulated timer.
 
 ## Token-cost reduction strategy
 
-ClearScreen reduces Groq usage at four layers before and during candidate assessment.
+ClearScreen reduces Groq usage at five layers before and during candidate assessment.
 
-### 1. Reduce the number of candidate calls
+### 1. Filter by dataset job type
+
+Before local relevance scoring, the reviewer can narrow the stored corpus using the job categories already supplied by `Resume.csv`. The selector includes each category and its resume count so the cost impact is visible before submission. Choosing `All job types` preserves the complete corpus for cross-functional or ambiguous roles.
+
+This filter is applied in PostgreSQL. Category labels are used only to select the candidate pool and are not included in Groq prompts. The run stores both the full dataset count and the post-category pool count for an auditable funnel.
+
+### 2. Reduce the number of candidate calls
 
 The deterministic pre-screen runs over every stored resume without using an LLM. Candidates with no explicit overlap are removed, subject to a minimum 10-candidate recall floor. `MAX_RESUMES_PER_RUN` remains a hard upper bound.
 
 This is normally the largest saving because every excluded candidate avoids an entire model request, including its system prompt, job profile, resume evidence, and generated response.
 
-### 2. Reduce candidate input per call
+### 3. Reduce candidate input per call
 
 For each shortlisted resume, local weighted fragment ranking keeps the text most connected to the job profile. The AI evidence input is capped at 6,000 characters instead of the earlier 30,000-character allowance.
 
 The repeated candidate system prompt was also condensed in v5 while preserving its evidence, fairness, scoring, confidence, human-review, and structured-output rules. Because that prompt is sent for every candidate, removing duplicated prose saves input on every request.
 
-### 3. Reduce output allowance
+### 4. Reduce output allowance
 
 The candidate schema needs only a score, confidence, three short arrays, a concise summary, and a review flag. Candidate output is therefore capped at 1,000 tokens. Job-profile extraction has a separate 1,800-token cap because its schema can contain more requirement arrays.
 
 These are maximum allowances, not guaranteed usage. A valid shorter response consumes fewer output tokens.
 
-### 4. Measure and expose the reduction
+### 5. Measure and expose the reduction
 
 Each new run stores:
 
-- total source resumes,
+- total resumes in the dataset,
+- selected dataset job type and the number of source resumes remaining after that filter,
 - resumes selected for Groq,
 - total characters across the selected full sanitized resumes, and
 - total characters after evidence compression.
@@ -253,7 +264,7 @@ The UI shows shortlist reduction, input-character reduction, approximate before/
 
 ### Recall and fairness tradeoff
 
-Aggressive filtering can save money while hiding transferable or synonym-based evidence. ClearScreen therefore keeps the local algorithm deterministic and inspectable, preserves a minimum candidate floor, instructs Groq that it may receive excerpts, and requires review of the original resume.
+Aggressive filtering can save money while hiding transferable or synonym-based evidence. A wrong dataset job type can exclude a relevant application before text ranking, so the UI keeps an `All job types` option and shows every stage of the funnel. ClearScreen also keeps the local algorithm deterministic and inspectable, preserves a minimum candidate floor inside the selected pool, instructs Groq that it may receive excerpts, and requires review of the original resume.
 
 Possible future refinements include BM25 or TF-IDF ranking, synonym dictionaries reviewed by domain experts, locally hosted embeddings, adaptive excerpt budgets based on job complexity, and offline evaluation of shortlist recall. These should be benchmarked before replacing the current transparent rules. Using another hosted LLM to summarise every resume was deliberately avoided because it would move rather than remove token cost.
 
@@ -554,6 +565,8 @@ erDiagram
         int totalCandidates
         int processedCount
         int failedCount
+        string datasetCategory
+        int datasetCandidates
         int sourceCandidates
         int originalInputCharacters
         int filteredInputCharacters
@@ -622,10 +635,11 @@ Input:
 {
   jobTitle: string;
   jobDescription: string;
+  datasetCategory: string | null;
 }
 ```
 
-This mutation validates configuration, extracts the profile, ranks and filters the corpus, measures evidence compression, creates the run and pending evaluation records, and immediately returns the run ID and efficiency totals.
+This mutation validates configuration, extracts the profile, filters resumes by the optional dataset job type in PostgreSQL, ranks the remaining pool, measures evidence compression, creates the run and pending evaluation records, and immediately returns the run ID and efficiency totals.
 
 ### `screening.processRun`
 
@@ -882,6 +896,7 @@ Candidate evaluations use a shared work queue. Worker count is the smaller of `G
 ### Cost and latency controls
 
 - The corpus is narrowed before AI evaluation.
+- An optional dataset job-type filter runs in PostgreSQL before text ranking.
 - Zero-evidence resumes are excluded after preserving a 10-candidate recall floor.
 - `MAX_RESUMES_PER_RUN` bounds candidate calls.
 - Candidate resume evidence is capped at 6,000 characters.
@@ -899,7 +914,7 @@ When one candidate fails, its evaluation becomes `FAILED`, a shortened error is 
 
 ### Current request lifecycle
 
-`createRun` performs profile extraction and local preparation, then returns the run ID. The browser starts `processRun` and polls `screening.run` every 1.2 seconds while the run is active. The progress card therefore reflects persisted candidate completions. It also shows corpus size, shortlisted candidates, and measured input reduction.
+`createRun` validates the dataset job-type pool, performs profile extraction and local preparation, then returns the run ID. The browser starts `processRun` and polls `screening.run` every 1.2 seconds while the run is active. The progress card therefore reflects persisted candidate completions. It also shows full dataset size, job-type pool size, shortlisted candidates, and measured input reduction.
 
 The displayed token total is an estimate based on approximately four characters per token. Actual billing depends on the model tokenizer, the job profile, system prompt, provider formatting, retries, and generated output.
 

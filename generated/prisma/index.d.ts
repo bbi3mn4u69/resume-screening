@@ -3507,6 +3507,7 @@ export namespace Prisma {
     totalCandidates: number | null
     processedCount: number | null
     failedCount: number | null
+    datasetCandidates: number | null
     sourceCandidates: number | null
     originalInputCharacters: number | null
     filteredInputCharacters: number | null
@@ -3516,6 +3517,7 @@ export namespace Prisma {
     totalCandidates: number | null
     processedCount: number | null
     failedCount: number | null
+    datasetCandidates: number | null
     sourceCandidates: number | null
     originalInputCharacters: number | null
     filteredInputCharacters: number | null
@@ -3530,6 +3532,8 @@ export namespace Prisma {
     totalCandidates: number | null
     processedCount: number | null
     failedCount: number | null
+    datasetCategory: string | null
+    datasetCandidates: number | null
     sourceCandidates: number | null
     originalInputCharacters: number | null
     filteredInputCharacters: number | null
@@ -3547,6 +3551,8 @@ export namespace Prisma {
     totalCandidates: number | null
     processedCount: number | null
     failedCount: number | null
+    datasetCategory: string | null
+    datasetCandidates: number | null
     sourceCandidates: number | null
     originalInputCharacters: number | null
     filteredInputCharacters: number | null
@@ -3564,6 +3570,8 @@ export namespace Prisma {
     totalCandidates: number
     processedCount: number
     failedCount: number
+    datasetCategory: number
+    datasetCandidates: number
     sourceCandidates: number
     originalInputCharacters: number
     filteredInputCharacters: number
@@ -3578,6 +3586,7 @@ export namespace Prisma {
     totalCandidates?: true
     processedCount?: true
     failedCount?: true
+    datasetCandidates?: true
     sourceCandidates?: true
     originalInputCharacters?: true
     filteredInputCharacters?: true
@@ -3587,6 +3596,7 @@ export namespace Prisma {
     totalCandidates?: true
     processedCount?: true
     failedCount?: true
+    datasetCandidates?: true
     sourceCandidates?: true
     originalInputCharacters?: true
     filteredInputCharacters?: true
@@ -3601,6 +3611,8 @@ export namespace Prisma {
     totalCandidates?: true
     processedCount?: true
     failedCount?: true
+    datasetCategory?: true
+    datasetCandidates?: true
     sourceCandidates?: true
     originalInputCharacters?: true
     filteredInputCharacters?: true
@@ -3618,6 +3630,8 @@ export namespace Prisma {
     totalCandidates?: true
     processedCount?: true
     failedCount?: true
+    datasetCategory?: true
+    datasetCandidates?: true
     sourceCandidates?: true
     originalInputCharacters?: true
     filteredInputCharacters?: true
@@ -3635,6 +3649,8 @@ export namespace Prisma {
     totalCandidates?: true
     processedCount?: true
     failedCount?: true
+    datasetCategory?: true
+    datasetCandidates?: true
     sourceCandidates?: true
     originalInputCharacters?: true
     filteredInputCharacters?: true
@@ -3739,6 +3755,8 @@ export namespace Prisma {
     totalCandidates: number
     processedCount: number
     failedCount: number
+    datasetCategory: string | null
+    datasetCandidates: number
     sourceCandidates: number
     originalInputCharacters: number
     filteredInputCharacters: number
@@ -3775,6 +3793,8 @@ export namespace Prisma {
     totalCandidates?: boolean
     processedCount?: boolean
     failedCount?: boolean
+    datasetCategory?: boolean
+    datasetCandidates?: boolean
     sourceCandidates?: boolean
     originalInputCharacters?: boolean
     filteredInputCharacters?: boolean
@@ -3795,6 +3815,8 @@ export namespace Prisma {
     totalCandidates?: boolean
     processedCount?: boolean
     failedCount?: boolean
+    datasetCategory?: boolean
+    datasetCandidates?: boolean
     sourceCandidates?: boolean
     originalInputCharacters?: boolean
     filteredInputCharacters?: boolean
@@ -3813,6 +3835,8 @@ export namespace Prisma {
     totalCandidates?: boolean
     processedCount?: boolean
     failedCount?: boolean
+    datasetCategory?: boolean
+    datasetCandidates?: boolean
     sourceCandidates?: boolean
     originalInputCharacters?: boolean
     filteredInputCharacters?: boolean
@@ -3831,6 +3855,8 @@ export namespace Prisma {
     totalCandidates?: boolean
     processedCount?: boolean
     failedCount?: boolean
+    datasetCategory?: boolean
+    datasetCandidates?: boolean
     sourceCandidates?: boolean
     originalInputCharacters?: boolean
     filteredInputCharacters?: boolean
@@ -3839,7 +3865,7 @@ export namespace Prisma {
     createdAt?: boolean
   }
 
-  export type ScreeningRunOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "jobId" | "status" | "modelName" | "promptVersion" | "totalCandidates" | "processedCount" | "failedCount" | "sourceCandidates" | "originalInputCharacters" | "filteredInputCharacters" | "startedAt" | "completedAt" | "createdAt", ExtArgs["result"]["screeningRun"]>
+  export type ScreeningRunOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "jobId" | "status" | "modelName" | "promptVersion" | "totalCandidates" | "processedCount" | "failedCount" | "datasetCategory" | "datasetCandidates" | "sourceCandidates" | "originalInputCharacters" | "filteredInputCharacters" | "startedAt" | "completedAt" | "createdAt", ExtArgs["result"]["screeningRun"]>
   export type ScreeningRunInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     job?: boolean | JobDefaultArgs<ExtArgs>
     evaluations?: boolean | ScreeningRun$evaluationsArgs<ExtArgs>
@@ -3867,6 +3893,8 @@ export namespace Prisma {
       totalCandidates: number
       processedCount: number
       failedCount: number
+      datasetCategory: string | null
+      datasetCandidates: number
       sourceCandidates: number
       originalInputCharacters: number
       filteredInputCharacters: number
@@ -4306,6 +4334,8 @@ export namespace Prisma {
     readonly totalCandidates: FieldRef<"ScreeningRun", 'Int'>
     readonly processedCount: FieldRef<"ScreeningRun", 'Int'>
     readonly failedCount: FieldRef<"ScreeningRun", 'Int'>
+    readonly datasetCategory: FieldRef<"ScreeningRun", 'String'>
+    readonly datasetCandidates: FieldRef<"ScreeningRun", 'Int'>
     readonly sourceCandidates: FieldRef<"ScreeningRun", 'Int'>
     readonly originalInputCharacters: FieldRef<"ScreeningRun", 'Int'>
     readonly filteredInputCharacters: FieldRef<"ScreeningRun", 'Int'>
@@ -6053,6 +6083,8 @@ export namespace Prisma {
     totalCandidates: 'totalCandidates',
     processedCount: 'processedCount',
     failedCount: 'failedCount',
+    datasetCategory: 'datasetCategory',
+    datasetCandidates: 'datasetCandidates',
     sourceCandidates: 'sourceCandidates',
     originalInputCharacters: 'originalInputCharacters',
     filteredInputCharacters: 'filteredInputCharacters',
@@ -6341,6 +6373,8 @@ export namespace Prisma {
     totalCandidates?: IntFilter<"ScreeningRun"> | number
     processedCount?: IntFilter<"ScreeningRun"> | number
     failedCount?: IntFilter<"ScreeningRun"> | number
+    datasetCategory?: StringNullableFilter<"ScreeningRun"> | string | null
+    datasetCandidates?: IntFilter<"ScreeningRun"> | number
     sourceCandidates?: IntFilter<"ScreeningRun"> | number
     originalInputCharacters?: IntFilter<"ScreeningRun"> | number
     filteredInputCharacters?: IntFilter<"ScreeningRun"> | number
@@ -6360,6 +6394,8 @@ export namespace Prisma {
     totalCandidates?: SortOrder
     processedCount?: SortOrder
     failedCount?: SortOrder
+    datasetCategory?: SortOrderInput | SortOrder
+    datasetCandidates?: SortOrder
     sourceCandidates?: SortOrder
     originalInputCharacters?: SortOrder
     filteredInputCharacters?: SortOrder
@@ -6382,6 +6418,8 @@ export namespace Prisma {
     totalCandidates?: IntFilter<"ScreeningRun"> | number
     processedCount?: IntFilter<"ScreeningRun"> | number
     failedCount?: IntFilter<"ScreeningRun"> | number
+    datasetCategory?: StringNullableFilter<"ScreeningRun"> | string | null
+    datasetCandidates?: IntFilter<"ScreeningRun"> | number
     sourceCandidates?: IntFilter<"ScreeningRun"> | number
     originalInputCharacters?: IntFilter<"ScreeningRun"> | number
     filteredInputCharacters?: IntFilter<"ScreeningRun"> | number
@@ -6401,6 +6439,8 @@ export namespace Prisma {
     totalCandidates?: SortOrder
     processedCount?: SortOrder
     failedCount?: SortOrder
+    datasetCategory?: SortOrderInput | SortOrder
+    datasetCandidates?: SortOrder
     sourceCandidates?: SortOrder
     originalInputCharacters?: SortOrder
     filteredInputCharacters?: SortOrder
@@ -6426,6 +6466,8 @@ export namespace Prisma {
     totalCandidates?: IntWithAggregatesFilter<"ScreeningRun"> | number
     processedCount?: IntWithAggregatesFilter<"ScreeningRun"> | number
     failedCount?: IntWithAggregatesFilter<"ScreeningRun"> | number
+    datasetCategory?: StringNullableWithAggregatesFilter<"ScreeningRun"> | string | null
+    datasetCandidates?: IntWithAggregatesFilter<"ScreeningRun"> | number
     sourceCandidates?: IntWithAggregatesFilter<"ScreeningRun"> | number
     originalInputCharacters?: IntWithAggregatesFilter<"ScreeningRun"> | number
     filteredInputCharacters?: IntWithAggregatesFilter<"ScreeningRun"> | number
@@ -6727,6 +6769,8 @@ export namespace Prisma {
     totalCandidates?: number
     processedCount?: number
     failedCount?: number
+    datasetCategory?: string | null
+    datasetCandidates?: number
     sourceCandidates?: number
     originalInputCharacters?: number
     filteredInputCharacters?: number
@@ -6746,6 +6790,8 @@ export namespace Prisma {
     totalCandidates?: number
     processedCount?: number
     failedCount?: number
+    datasetCategory?: string | null
+    datasetCandidates?: number
     sourceCandidates?: number
     originalInputCharacters?: number
     filteredInputCharacters?: number
@@ -6763,6 +6809,8 @@ export namespace Prisma {
     totalCandidates?: IntFieldUpdateOperationsInput | number
     processedCount?: IntFieldUpdateOperationsInput | number
     failedCount?: IntFieldUpdateOperationsInput | number
+    datasetCategory?: NullableStringFieldUpdateOperationsInput | string | null
+    datasetCandidates?: IntFieldUpdateOperationsInput | number
     sourceCandidates?: IntFieldUpdateOperationsInput | number
     originalInputCharacters?: IntFieldUpdateOperationsInput | number
     filteredInputCharacters?: IntFieldUpdateOperationsInput | number
@@ -6782,6 +6830,8 @@ export namespace Prisma {
     totalCandidates?: IntFieldUpdateOperationsInput | number
     processedCount?: IntFieldUpdateOperationsInput | number
     failedCount?: IntFieldUpdateOperationsInput | number
+    datasetCategory?: NullableStringFieldUpdateOperationsInput | string | null
+    datasetCandidates?: IntFieldUpdateOperationsInput | number
     sourceCandidates?: IntFieldUpdateOperationsInput | number
     originalInputCharacters?: IntFieldUpdateOperationsInput | number
     filteredInputCharacters?: IntFieldUpdateOperationsInput | number
@@ -6800,6 +6850,8 @@ export namespace Prisma {
     totalCandidates?: number
     processedCount?: number
     failedCount?: number
+    datasetCategory?: string | null
+    datasetCandidates?: number
     sourceCandidates?: number
     originalInputCharacters?: number
     filteredInputCharacters?: number
@@ -6816,6 +6868,8 @@ export namespace Prisma {
     totalCandidates?: IntFieldUpdateOperationsInput | number
     processedCount?: IntFieldUpdateOperationsInput | number
     failedCount?: IntFieldUpdateOperationsInput | number
+    datasetCategory?: NullableStringFieldUpdateOperationsInput | string | null
+    datasetCandidates?: IntFieldUpdateOperationsInput | number
     sourceCandidates?: IntFieldUpdateOperationsInput | number
     originalInputCharacters?: IntFieldUpdateOperationsInput | number
     filteredInputCharacters?: IntFieldUpdateOperationsInput | number
@@ -6833,6 +6887,8 @@ export namespace Prisma {
     totalCandidates?: IntFieldUpdateOperationsInput | number
     processedCount?: IntFieldUpdateOperationsInput | number
     failedCount?: IntFieldUpdateOperationsInput | number
+    datasetCategory?: NullableStringFieldUpdateOperationsInput | string | null
+    datasetCandidates?: IntFieldUpdateOperationsInput | number
     sourceCandidates?: IntFieldUpdateOperationsInput | number
     originalInputCharacters?: IntFieldUpdateOperationsInput | number
     filteredInputCharacters?: IntFieldUpdateOperationsInput | number
@@ -7233,6 +7289,8 @@ export namespace Prisma {
     totalCandidates?: SortOrder
     processedCount?: SortOrder
     failedCount?: SortOrder
+    datasetCategory?: SortOrder
+    datasetCandidates?: SortOrder
     sourceCandidates?: SortOrder
     originalInputCharacters?: SortOrder
     filteredInputCharacters?: SortOrder
@@ -7245,6 +7303,7 @@ export namespace Prisma {
     totalCandidates?: SortOrder
     processedCount?: SortOrder
     failedCount?: SortOrder
+    datasetCandidates?: SortOrder
     sourceCandidates?: SortOrder
     originalInputCharacters?: SortOrder
     filteredInputCharacters?: SortOrder
@@ -7259,6 +7318,8 @@ export namespace Prisma {
     totalCandidates?: SortOrder
     processedCount?: SortOrder
     failedCount?: SortOrder
+    datasetCategory?: SortOrder
+    datasetCandidates?: SortOrder
     sourceCandidates?: SortOrder
     originalInputCharacters?: SortOrder
     filteredInputCharacters?: SortOrder
@@ -7276,6 +7337,8 @@ export namespace Prisma {
     totalCandidates?: SortOrder
     processedCount?: SortOrder
     failedCount?: SortOrder
+    datasetCategory?: SortOrder
+    datasetCandidates?: SortOrder
     sourceCandidates?: SortOrder
     originalInputCharacters?: SortOrder
     filteredInputCharacters?: SortOrder
@@ -7288,6 +7351,7 @@ export namespace Prisma {
     totalCandidates?: SortOrder
     processedCount?: SortOrder
     failedCount?: SortOrder
+    datasetCandidates?: SortOrder
     sourceCandidates?: SortOrder
     originalInputCharacters?: SortOrder
     filteredInputCharacters?: SortOrder
@@ -7968,6 +8032,8 @@ export namespace Prisma {
     totalCandidates?: number
     processedCount?: number
     failedCount?: number
+    datasetCategory?: string | null
+    datasetCandidates?: number
     sourceCandidates?: number
     originalInputCharacters?: number
     filteredInputCharacters?: number
@@ -7985,6 +8051,8 @@ export namespace Prisma {
     totalCandidates?: number
     processedCount?: number
     failedCount?: number
+    datasetCategory?: string | null
+    datasetCandidates?: number
     sourceCandidates?: number
     originalInputCharacters?: number
     filteredInputCharacters?: number
@@ -8032,6 +8100,8 @@ export namespace Prisma {
     totalCandidates?: IntFilter<"ScreeningRun"> | number
     processedCount?: IntFilter<"ScreeningRun"> | number
     failedCount?: IntFilter<"ScreeningRun"> | number
+    datasetCategory?: StringNullableFilter<"ScreeningRun"> | string | null
+    datasetCandidates?: IntFilter<"ScreeningRun"> | number
     sourceCandidates?: IntFilter<"ScreeningRun"> | number
     originalInputCharacters?: IntFilter<"ScreeningRun"> | number
     filteredInputCharacters?: IntFilter<"ScreeningRun"> | number
@@ -8162,6 +8232,8 @@ export namespace Prisma {
     totalCandidates?: number
     processedCount?: number
     failedCount?: number
+    datasetCategory?: string | null
+    datasetCandidates?: number
     sourceCandidates?: number
     originalInputCharacters?: number
     filteredInputCharacters?: number
@@ -8180,6 +8252,8 @@ export namespace Prisma {
     totalCandidates?: number
     processedCount?: number
     failedCount?: number
+    datasetCategory?: string | null
+    datasetCandidates?: number
     sourceCandidates?: number
     originalInputCharacters?: number
     filteredInputCharacters?: number
@@ -8245,6 +8319,8 @@ export namespace Prisma {
     totalCandidates?: IntFieldUpdateOperationsInput | number
     processedCount?: IntFieldUpdateOperationsInput | number
     failedCount?: IntFieldUpdateOperationsInput | number
+    datasetCategory?: NullableStringFieldUpdateOperationsInput | string | null
+    datasetCandidates?: IntFieldUpdateOperationsInput | number
     sourceCandidates?: IntFieldUpdateOperationsInput | number
     originalInputCharacters?: IntFieldUpdateOperationsInput | number
     filteredInputCharacters?: IntFieldUpdateOperationsInput | number
@@ -8263,6 +8339,8 @@ export namespace Prisma {
     totalCandidates?: IntFieldUpdateOperationsInput | number
     processedCount?: IntFieldUpdateOperationsInput | number
     failedCount?: IntFieldUpdateOperationsInput | number
+    datasetCategory?: NullableStringFieldUpdateOperationsInput | string | null
+    datasetCandidates?: IntFieldUpdateOperationsInput | number
     sourceCandidates?: IntFieldUpdateOperationsInput | number
     originalInputCharacters?: IntFieldUpdateOperationsInput | number
     filteredInputCharacters?: IntFieldUpdateOperationsInput | number
@@ -8390,6 +8468,8 @@ export namespace Prisma {
     totalCandidates?: number
     processedCount?: number
     failedCount?: number
+    datasetCategory?: string | null
+    datasetCandidates?: number
     sourceCandidates?: number
     originalInputCharacters?: number
     filteredInputCharacters?: number
@@ -8406,6 +8486,8 @@ export namespace Prisma {
     totalCandidates?: IntFieldUpdateOperationsInput | number
     processedCount?: IntFieldUpdateOperationsInput | number
     failedCount?: IntFieldUpdateOperationsInput | number
+    datasetCategory?: NullableStringFieldUpdateOperationsInput | string | null
+    datasetCandidates?: IntFieldUpdateOperationsInput | number
     sourceCandidates?: IntFieldUpdateOperationsInput | number
     originalInputCharacters?: IntFieldUpdateOperationsInput | number
     filteredInputCharacters?: IntFieldUpdateOperationsInput | number
@@ -8423,6 +8505,8 @@ export namespace Prisma {
     totalCandidates?: IntFieldUpdateOperationsInput | number
     processedCount?: IntFieldUpdateOperationsInput | number
     failedCount?: IntFieldUpdateOperationsInput | number
+    datasetCategory?: NullableStringFieldUpdateOperationsInput | string | null
+    datasetCandidates?: IntFieldUpdateOperationsInput | number
     sourceCandidates?: IntFieldUpdateOperationsInput | number
     originalInputCharacters?: IntFieldUpdateOperationsInput | number
     filteredInputCharacters?: IntFieldUpdateOperationsInput | number
@@ -8440,6 +8524,8 @@ export namespace Prisma {
     totalCandidates?: IntFieldUpdateOperationsInput | number
     processedCount?: IntFieldUpdateOperationsInput | number
     failedCount?: IntFieldUpdateOperationsInput | number
+    datasetCategory?: NullableStringFieldUpdateOperationsInput | string | null
+    datasetCandidates?: IntFieldUpdateOperationsInput | number
     sourceCandidates?: IntFieldUpdateOperationsInput | number
     originalInputCharacters?: IntFieldUpdateOperationsInput | number
     filteredInputCharacters?: IntFieldUpdateOperationsInput | number

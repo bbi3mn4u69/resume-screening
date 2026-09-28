@@ -223,6 +223,43 @@ void test("filters zero-evidence resumes after preserving a minimum review set",
   );
 });
 
+void test("limits pre-screening to the selected dataset job type", () => {
+  const profile = {
+    title: "Data Analyst",
+    mustHaveSkills: ["SQL"],
+    niceToHaveSkills: [],
+    responsibilities: [],
+    experienceRequirements: [],
+    educationRequirements: [],
+    certifications: [],
+    domainKeywords: [],
+  };
+
+  const selected = selectCandidatesForScreening(
+    profile,
+    [
+      {
+        id: "data",
+        sanitizedText: "Built SQL reporting pipelines",
+        originalCategory: "DATA SCIENCE",
+      },
+      {
+        id: "finance",
+        sanitizedText: "Built SQL finance reports",
+        originalCategory: "FINANCE",
+      },
+    ],
+    10,
+    1,
+    "DATA SCIENCE",
+  );
+
+  assert.deepEqual(
+    selected.map((candidate) => candidate.id),
+    ["data"],
+  );
+});
+
 void test("compresses a resume to job-relevant evidence before AI evaluation", () => {
   const profile = {
     title: "Data Scientist",

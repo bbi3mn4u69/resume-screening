@@ -49,6 +49,8 @@ model ScreeningRun {
   totalCandidates         Int       @default(0)
   processedCount          Int       @default(0)
   failedCount             Int       @default(0)
+  datasetCategory         String?
+  datasetCandidates       Int       @default(0)
   sourceCandidates        Int       @default(0)
   originalInputCharacters Int       @default(0)
   filteredInputCharacters Int       @default(0)

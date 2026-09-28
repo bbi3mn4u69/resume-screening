@@ -153,6 +153,8 @@ exports.Prisma.ScreeningRunScalarFieldEnum = {
   totalCandidates: 'totalCandidates',
   processedCount: 'processedCount',
   failedCount: 'failedCount',
+  datasetCategory: 'datasetCategory',
+  datasetCandidates: 'datasetCandidates',
   sourceCandidates: 'sourceCandidates',
   originalInputCharacters: 'originalInputCharacters',
   filteredInputCharacters: 'filteredInputCharacters',
