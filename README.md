@@ -97,8 +97,8 @@ The browser never receives the Groq API key or direct database credentials. Scre
 - Ranks the selected job-type pool with a deterministic lexical pre-screen.
 - Excludes zero-evidence resumes locally while retaining a minimum 10-candidate recall floor.
 - Sends only the highest-ranked bounded set to Groq.
-- Compresses every selected resume to at most 6,000 job-relevant characters.
-- Caps candidate-assessment output at 1,000 tokens.
+- Compresses every selected resume to at most 2,000 job-relevant characters.
+- Caps candidate-assessment output at 500 tokens.
 - Evaluates candidates concurrently with a configurable concurrency limit.
 - Persists progress, token-efficiency measurements, and failures for traceability.
 - Converts AI fit scores into fixed labels in application code.
@@ -138,7 +138,7 @@ flowchart TD
     G --> H
     H --> I[Exclude zero-evidence resumes with a 10-candidate floor]
     I --> J[Select up to configured maximum]
-    J --> K[Extract relevant evidence up to 6,000 characters]
+    J --> K[Extract relevant evidence up to 2,000 characters]
     K --> L[Concurrent Groq evidence assessments]
     F --> L
     L --> M[Zod validation]
@@ -188,7 +188,7 @@ This score is a cost-control shortlist signal, not the final classification. It 
 
 Before a selected resume is sent to Groq, ClearScreen splits its sanitized text into bounded fragments and ranks them locally. Fragments receive more weight when they contain terms from must-have skills, core responsibilities, and experience requirements; education, certifications, preferred skills, and domain terms receive progressively lower weights.
 
-The highest-scoring fragments are restored to their original document order and assembled into an evidence excerpt capped at 6,000 characters. If the complete resume is already below the cap, it is left intact. If no fragment matches, the beginning of the sanitized resume is used as a conservative fallback.
+The highest-scoring fragments are restored to their original document order and assembled into an evidence excerpt capped at 2,000 characters. If the complete resume is already below the cap, it is left intact. If no fragment matches, the beginning of the sanitized resume is used as a conservative fallback.
 
 This compression substantially reduces prompt size, but it can omit indirectly related or transferable evidence. The v5 prompt therefore tells Groq that it may be receiving selected excerpts and requires human review when omitted context makes a critical requirement ambiguous.
 
@@ -240,13 +240,13 @@ This is normally the largest saving because every excluded candidate avoids an e
 
 ### 3. Reduce candidate input per call
 
-For each shortlisted resume, local weighted fragment ranking keeps the text most connected to the job profile. The AI evidence input is capped at 6,000 characters instead of the earlier 30,000-character allowance.
+For each shortlisted resume, local weighted fragment ranking keeps the text most connected to the job profile. The AI evidence input is capped at 2,000 characters instead of the earlier 30,000-character allowance.
 
 The repeated candidate system prompt was also condensed in v5 while preserving its evidence, fairness, scoring, confidence, human-review, and structured-output rules. Because that prompt is sent for every candidate, removing duplicated prose saves input on every request.
 
 ### 4. Reduce output allowance
 
-The candidate schema needs only a score, confidence, three short arrays, a concise summary, and a review flag. Candidate output is therefore capped at 1,000 tokens. Job-profile extraction has a separate 1,800-token cap because its schema can contain more requirement arrays.
+The candidate schema needs only a score, confidence, three arrays capped at four short items, a summary capped at 400 characters, and a review flag. Candidate output is therefore capped at 500 tokens. Job-profile extraction has a separate 1,800-token cap because its schema can contain more requirement arrays.
 
 These are maximum allowances, not guaranteed usage. A valid shorter response consumes fewer output tokens.
 
@@ -494,7 +494,7 @@ flowchart LR
 - Uses the Vercel AI SDK and `@ai-sdk/groq` provider.
 - Defines strict Zod schemas for job profiles and candidate assessments.
 - Uses temperature `0` for more deterministic output.
-- Caps job-profile output at 1,800 tokens and candidate-assessment output at 1,000 tokens.
+- Caps job-profile output at 1,800 tokens and candidate-assessment output at 500 tokens.
 - Limits each request to 60 seconds.
 - Requests strict structured output when supported.
 - Retries structured-output validation failures with a JSON fallback path.
@@ -764,7 +764,7 @@ For a local application connecting to Railway, use the externally reachable conn
 DATABASE_URL="postgresql://postgres:password@host:5432/railway"
 GROQ_API_KEY=""
 GROQ_MODEL="openai/gpt-oss-20b"
-MAX_RESUMES_PER_RUN="100"
+MAX_RESUMES_PER_RUN="25"
 GROQ_CONCURRENCY="3"
 ```
 
@@ -773,7 +773,7 @@ GROQ_CONCURRENCY="3"
 | `DATABASE_URL`        |               Yes | None                 | PostgreSQL connection string used by Prisma                |
 | `GROQ_API_KEY`        |     For screening | None                 | Server-only API key; browsing remains available without it |
 | `GROQ_MODEL`          |                No | `openai/gpt-oss-20b` | Groq model used for extraction and assessment              |
-| `MAX_RESUMES_PER_RUN` |                No | `100`                | Maximum shortlisted resumes sent to Groq                   |
+| `MAX_RESUMES_PER_RUN` |                No | `25`                 | Maximum shortlisted resumes sent to Groq                   |
 | `GROQ_CONCURRENCY`    |                No | `3`                  | Concurrent evaluations; allowed range 1–10                 |
 | `NODE_ENV`            | Usually automatic | `development`        | Runtime environment                                        |
 | `SKIP_ENV_VALIDATION` |                No | unset                | Skips environment validation for controlled builds         |
@@ -891,7 +891,13 @@ Recommended manual verification:
 
 ### Concurrency
 
-Candidate evaluations use a shared work queue. Worker count is the smaller of `GROQ_CONCURRENCY` and the number of shortlisted resumes. A lower value is gentler on rate limits; a higher value can reduce run time but increases concurrent requests.
+Candidate evaluations use a shared work queue. Worker count is the smaller of `GROQ_CONCURRENCY` and the number of shortlisted resumes. All job-profile and candidate calls then pass through one Groq scheduler that starts requests at most 30 times per minute.
+
+The scheduler disables the AI SDK's independent automatic retries. When Groq returns HTTP `429` while daily requests remain available, it prefers the shorter `x-ratelimit-reset-tokens` clock over a longer generic `Retry-After`, pauses every worker through one shared token cooldown, and retries the affected request up to five times. This prevents retry bursts without leaving usable minute-level token capacity idle. If `x-ratelimit-remaining-requests` is zero, the run fails immediately instead of sleeping through a long daily-quota reset.
+
+Groq enforces request and token limits independently. The scheduler can use the 30 RPM allowance, but it cannot make an 8,000 TPM allowance process more than 8,000 uncached input and output tokens per minute. When the token ceiling is reached, the provider cooldown determines the fastest safe continuation.
+
+The free-tier default sends the top 25 locally ranked candidates, with 2,000 evidence characters and at most 500 output tokens each. This is sized toward the requested five-minute operating window without pretending that 100 full AI assessments can fit inside five minutes of an 8,000 TPM allowance. Set `MAX_RESUMES_PER_RUN` higher when broader coverage matters more than latency.
 
 ### Cost and latency controls
 
@@ -899,9 +905,9 @@ Candidate evaluations use a shared work queue. Worker count is the smaller of `G
 - An optional dataset job-type filter runs in PostgreSQL before text ranking.
 - Zero-evidence resumes are excluded after preserving a 10-candidate recall floor.
 - `MAX_RESUMES_PER_RUN` bounds candidate calls.
-- Candidate resume evidence is capped at 6,000 characters.
+- Candidate resume evidence is capped at 2,000 characters.
 - The repeated v5 candidate system prompt is compacted to remove redundant instructions.
-- Candidate output is capped at 1,000 tokens; job-profile output is capped at 1,800.
+- Candidate output is capped at 500 tokens; job-profile output is capped at 1,800.
 - Requests time out after 60 seconds.
 - History views reuse stored results.
 - Each run stores measured before/after input characters and exposes an approximate token count using four characters per token.
@@ -1012,7 +1018,7 @@ Some evaluations failed while others completed. Open the run, identify **Needs r
 - Authentication and HR-specific roles.
 - Durable background jobs with streamed progress instead of request-bound polling.
 - Cancel and retry controls.
-- Provider-aware rate-limit queues.
+- Persistent queue recovery after a server restart.
 - Stronger PII detection and de-identification.
 - Semantic retrieval or embeddings for pre-screening.
 - Human-reviewed requirement weights.

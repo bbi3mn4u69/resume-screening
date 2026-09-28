@@ -1,6 +1,6 @@
 import type { JobProfile } from "../ai/schemas.ts";
 
-export const AI_RESUME_CHARACTER_LIMIT = 6_000;
+export const AI_RESUME_CHARACTER_LIMIT = 2_000;
 export const MIN_AI_CANDIDATES = 10;
 
 const STOP_WORDS = new Set([

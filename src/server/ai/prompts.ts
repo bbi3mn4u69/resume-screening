@@ -25,7 +25,7 @@ CONFIDENCE
 Return confidence as a number from 0 to 1 based on evidence quality and completeness: 0.80-1.00 clear and consistent; 0.50-0.79 incomplete or indirect; 0.00-0.49 limited, ambiguous, or contradictory. This is confidence in the assessment, not in the candidate. Set needsHumanReview when confidence is below 0.50 or when evidence is ambiguous, contradictory, missing, transferable, or heavily indirect.
 
 OUTPUT
-Return exactly one JSON object with fitScore, confidence, matchedRequirements, missingRequirements, supportingEvidence, summary, and needsHumanReview. Every conclusion must be concise, neutral, and traceable to supplied evidence. Do not use Markdown or add fields.
+Return exactly one JSON object with fitScore, confidence, matchedRequirements, missingRequirements, supportingEvidence, summary, and needsHumanReview. Return at most four short items in each array and keep summary within 400 characters. Every conclusion must be concise, neutral, and traceable to supplied evidence. Do not use Markdown or add fields.
 `;
 
 export const jobProfileSystemPrompt = `

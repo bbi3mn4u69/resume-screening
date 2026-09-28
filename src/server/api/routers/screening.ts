@@ -11,6 +11,7 @@ import {
   buildRelevantResumeExcerpt,
   selectCandidatesForScreening,
 } from "~/server/screening/pre-screen";
+import { finalizeRunFailure } from "~/server/screening/run-lifecycle";
 
 const DATASET_NAME = "resume-data-set-v1";
 
@@ -270,94 +271,104 @@ export const screeningRouter = createTRPCRouter({
         return { runId: run.id, status: run.status };
       }
 
-      const profile = jobProfileSchema.parse(
-        JSON.parse(run.job.extractedProfileJson),
-      );
-      const resumes = run.evaluations.map((evaluation) => ({
-        id: evaluation.resume.id,
-        sanitizedText: evaluation.resume.sanitizedText,
-      }));
-      let cursor = 0;
-      let newFailedCount = 0;
-      const workers = Array.from(
-        { length: Math.min(env.GROQ_CONCURRENCY, resumes.length) },
+      return finalizeRunFailure(
         async () => {
-          while (cursor < resumes.length) {
-            const resume = resumes[cursor++];
-            if (!resume) break;
-            try {
-              const assessment = await evaluateCandidate(
-                profile,
-                buildRelevantResumeExcerpt(profile, resume.sanitizedText),
-              );
-              const fitScore = Math.round(assessment.fitScore);
-              await ctx.db.resumeEvaluation.update({
-                where: {
-                  runId_resumeId: { runId: run.id, resumeId: resume.id },
-                },
-                data: {
-                  status: "COMPLETED",
-                  fitScore,
-                  matchLabel: getMatchLabel(fitScore),
-                  confidence: assessment.confidence,
-                  matchedRequirementsJson: JSON.stringify(
-                    assessment.matchedRequirements,
-                  ),
-                  missingRequirementsJson: JSON.stringify(
-                    assessment.missingRequirements,
-                  ),
-                  supportingEvidenceJson: JSON.stringify(
-                    assessment.supportingEvidence,
-                  ),
-                  summary: assessment.summary,
-                  needsHumanReview:
-                    assessment.needsHumanReview ||
-                    assessment.confidence <
-                      MATCH_THRESHOLDS.humanReviewConfidence,
-                },
-              });
-            } catch (error) {
-              newFailedCount += 1;
-              await ctx.db.resumeEvaluation.update({
-                where: {
-                  runId_resumeId: { runId: run.id, resumeId: resume.id },
-                },
-                data: {
-                  status: "FAILED",
-                  errorMessage:
-                    error instanceof Error
-                      ? error.message.slice(0, 300)
-                      : "Candidate evaluation failed.",
-                  needsHumanReview: true,
-                },
-              });
-            } finally {
-              await ctx.db.screeningRun.update({
-                where: { id: run.id },
-                data: { processedCount: { increment: 1 } },
-              });
-            }
-          }
+          const profile = jobProfileSchema.parse(
+            JSON.parse(run.job.extractedProfileJson),
+          );
+          const resumes = run.evaluations.map((evaluation) => ({
+            id: evaluation.resume.id,
+            sanitizedText: evaluation.resume.sanitizedText,
+          }));
+          let cursor = 0;
+          let newFailedCount = 0;
+          const workers = Array.from(
+            { length: Math.min(env.GROQ_CONCURRENCY, resumes.length) },
+            async () => {
+              while (cursor < resumes.length) {
+                const resume = resumes[cursor++];
+                if (!resume) break;
+                try {
+                  const assessment = await evaluateCandidate(
+                    profile,
+                    buildRelevantResumeExcerpt(profile, resume.sanitizedText),
+                  );
+                  const fitScore = Math.round(assessment.fitScore);
+                  await ctx.db.resumeEvaluation.update({
+                    where: {
+                      runId_resumeId: { runId: run.id, resumeId: resume.id },
+                    },
+                    data: {
+                      status: "COMPLETED",
+                      fitScore,
+                      matchLabel: getMatchLabel(fitScore),
+                      confidence: assessment.confidence,
+                      matchedRequirementsJson: JSON.stringify(
+                        assessment.matchedRequirements,
+                      ),
+                      missingRequirementsJson: JSON.stringify(
+                        assessment.missingRequirements,
+                      ),
+                      supportingEvidenceJson: JSON.stringify(
+                        assessment.supportingEvidence,
+                      ),
+                      summary: assessment.summary,
+                      needsHumanReview:
+                        assessment.needsHumanReview ||
+                        assessment.confidence <
+                          MATCH_THRESHOLDS.humanReviewConfidence,
+                    },
+                  });
+                } catch (error) {
+                  newFailedCount += 1;
+                  await ctx.db.resumeEvaluation.update({
+                    where: {
+                      runId_resumeId: { runId: run.id, resumeId: resume.id },
+                    },
+                    data: {
+                      status: "FAILED",
+                      errorMessage:
+                        error instanceof Error
+                          ? error.message.slice(0, 300)
+                          : "Candidate evaluation failed.",
+                      needsHumanReview: true,
+                    },
+                  });
+                } finally {
+                  await ctx.db.screeningRun.update({
+                    where: { id: run.id },
+                    data: { processedCount: { increment: 1 } },
+                  });
+                }
+              }
+            },
+          );
+
+          await Promise.all(workers);
+          const failedCount = run.failedCount + newFailedCount;
+          await ctx.db.screeningRun.update({
+            where: { id: run.id },
+            data: {
+              failedCount,
+              status:
+                failedCount === 0
+                  ? "COMPLETED"
+                  : failedCount < run.totalCandidates
+                    ? "PARTIAL"
+                    : "FAILED",
+              completedAt: new Date(),
+            },
+          });
+
+          return { runId: run.id, status: "finished" };
+        },
+        async () => {
+          await ctx.db.screeningRun.update({
+            where: { id: run.id },
+            data: { status: "FAILED", completedAt: new Date() },
+          });
         },
       );
-
-      await Promise.all(workers);
-      const failedCount = run.failedCount + newFailedCount;
-      await ctx.db.screeningRun.update({
-        where: { id: run.id },
-        data: {
-          failedCount,
-          status:
-            failedCount === 0
-              ? "COMPLETED"
-              : failedCount < run.totalCandidates
-                ? "PARTIAL"
-                : "FAILED",
-          completedAt: new Date(),
-        },
-      });
-
-      return { runId: run.id, status: "finished" };
     }),
 
   run: publicProcedure

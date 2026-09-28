@@ -285,6 +285,38 @@ void test("compresses a resume to job-relevant evidence before AI evaluation", (
   assert.ok(excerpt.length < resume.length / 2);
 });
 
+void test("bounds the default candidate excerpt for free-tier throughput", () => {
+  const profile = {
+    title: "Data Scientist",
+    mustHaveSkills: ["Python"],
+    niceToHaveSkills: [],
+    responsibilities: [],
+    experienceRequirements: [],
+    educationRequirements: [],
+    certifications: [],
+    domainKeywords: [],
+  };
+  const resume = "Built production Python systems. ".repeat(300);
+
+  const excerpt = buildRelevantResumeExcerpt(profile, resume);
+
+  assert.ok(excerpt.length <= 2_000);
+});
+
+void test("rejects candidate assessments that exceed the concise output budget", () => {
+  const result = candidateAssessmentSchema.safeParse({
+    fitScore: 70,
+    confidence: 0.7,
+    matchedRequirements: ["Python"],
+    missingRequirements: [],
+    supportingEvidence: [],
+    summary: "x".repeat(401),
+    needsHumanReview: false,
+  });
+
+  assert.equal(result.success, false);
+});
+
 void test("screening prompt agrees with the structured assessment schema", () => {
   assert.match(screeningSystemPrompt, /confidence.*number from 0 to 1/is);
   assert.match(screeningSystemPrompt, /do not output.*match classification/is);
@@ -337,6 +369,54 @@ void test("retries Groq JSON validation failures with the fallback generator", a
 
   assert.equal(result, "recovered");
   assert.equal(fallbackCalls, 1);
+});
+
+void test("marks a screening run failed when processing aborts", async () => {
+  const lifecycleModule = (await import("./run-lifecycle.ts").catch(
+    () => ({}),
+  )) as {
+    finalizeRunFailure?: <T>(
+      process: () => Promise<T>,
+      markFailed: () => Promise<void>,
+    ) => Promise<T>;
+  };
+  assert.equal(
+    typeof lifecycleModule.finalizeRunFailure,
+    "function",
+    "finalizeRunFailure must be implemented",
+  );
+  if (!lifecycleModule.finalizeRunFailure) return;
+
+  let failedStatusWrites = 0;
+  await assert.rejects(
+    lifecycleModule.finalizeRunFailure(
+      async () => {
+        throw new Error("database connection lost");
+      },
+      async () => {
+        failedStatusWrites += 1;
+      },
+    ),
+    /database connection lost/,
+  );
+
+  assert.equal(failedStatusWrites, 1);
+});
+
+void test("preserves the processing error when the failure status cannot be saved", async () => {
+  const { finalizeRunFailure } = await import("./run-lifecycle.ts");
+
+  await assert.rejects(
+    finalizeRunFailure(
+      async () => {
+        throw new Error("candidate persistence failed");
+      },
+      async () => {
+        throw new Error("database still unavailable");
+      },
+    ),
+    /candidate persistence failed/,
+  );
 });
 
 void test("wraps original resume HTML in an isolated document", async () => {

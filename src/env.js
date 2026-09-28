@@ -10,7 +10,7 @@ export const env = createEnv({
     DATABASE_URL: z.string().min(1),
     GROQ_API_KEY: z.string().min(1).optional(),
     GROQ_MODEL: z.string().default("openai/gpt-oss-20b"),
-    MAX_RESUMES_PER_RUN: z.coerce.number().int().positive().default(100),
+    MAX_RESUMES_PER_RUN: z.coerce.number().int().positive().default(25),
     GROQ_CONCURRENCY: z.coerce.number().int().min(1).max(10).default(3),
     NODE_ENV: z
       .enum(["development", "test", "production"])

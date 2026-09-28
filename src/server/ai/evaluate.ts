@@ -13,6 +13,7 @@ import {
   jobProfileSystemPrompt,
   screeningSystemPrompt,
 } from "~/server/ai/prompts";
+import { groqRequestScheduler } from "~/server/ai/groq-request-scheduler";
 import { generateWithJsonFallback } from "~/server/ai/structured-output";
 
 function model() {
@@ -25,7 +26,7 @@ function model() {
 }
 
 const generationOptions = {
-  maxRetries: 2,
+  maxRetries: 0,
   temperature: 0,
   timeout: 60_000,
   providerOptions: {
@@ -61,8 +62,14 @@ export async function extractJobProfile(title: string, description: string) {
     prompt: `JOB TITLE:\n${title}\n\nJOB DESCRIPTION:\n${description}`,
   } as const;
   const { output } = await generateWithJsonFallback(
-    () => generateText({ ...request, ...options(1_800, true) }),
-    () => generateText({ ...request, ...options(1_800, false) }),
+    () =>
+      groqRequestScheduler.run(() =>
+        generateText({ ...request, ...options(1_800, true) }),
+      ),
+    () =>
+      groqRequestScheduler.run(() =>
+        generateText({ ...request, ...options(1_800, false) }),
+      ),
   );
   return jobProfileSchema.parse(output);
 }
@@ -78,11 +85,17 @@ export async function evaluateCandidate(
       schema: candidateAssessmentSchema,
     }),
     system: screeningSystemPrompt,
-    prompt: `JOB PROFILE:\n${JSON.stringify(profile)}\n\nRESUME EVIDENCE:\n${resumeText.slice(0, 6_000)}`,
+    prompt: `JOB PROFILE:\n${JSON.stringify(profile)}\n\nRESUME EVIDENCE:\n${resumeText.slice(0, 2_000)}`,
   } as const;
   const { output } = await generateWithJsonFallback(
-    () => generateText({ ...request, ...options(1_000, true) }),
-    () => generateText({ ...request, ...options(1_000, false) }),
+    () =>
+      groqRequestScheduler.run(() =>
+        generateText({ ...request, ...options(500, true) }),
+      ),
+    () =>
+      groqRequestScheduler.run(() =>
+        generateText({ ...request, ...options(500, false) }),
+      ),
   );
   return candidateAssessmentSchema.parse(output);
 }

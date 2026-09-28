@@ -14,10 +14,10 @@ export const jobProfileSchema = z.object({
 export const candidateAssessmentSchema = z.object({
   fitScore: z.number().int().min(0).max(100),
   confidence: z.number().min(0).max(1),
-  matchedRequirements: z.array(z.string()).max(6),
-  missingRequirements: z.array(z.string()).max(6),
-  supportingEvidence: z.array(z.string()).max(6),
-  summary: z.string().min(1).max(800),
+  matchedRequirements: z.array(z.string()).max(4),
+  missingRequirements: z.array(z.string()).max(4),
+  supportingEvidence: z.array(z.string()).max(4),
+  summary: z.string().min(1).max(400),
   needsHumanReview: z.boolean(),
 });
 
@@ -25,6 +25,11 @@ export type JobProfile = z.infer<typeof jobProfileSchema>;
 export type CandidateAssessment = z.infer<typeof candidateAssessmentSchema>;
 
 const stringArray = { type: "array", items: { type: "string" } } as const;
+const conciseStringArray = {
+  type: "array",
+  items: { type: "string" },
+  maxItems: 4,
+} as const;
 
 export const jobProfileJsonSchema = {
   type: "object",
@@ -56,10 +61,10 @@ export const candidateAssessmentJsonSchema = {
   properties: {
     fitScore: { type: "integer", minimum: 0, maximum: 100 },
     confidence: { type: "number", minimum: 0, maximum: 1 },
-    matchedRequirements: stringArray,
-    missingRequirements: stringArray,
-    supportingEvidence: stringArray,
-    summary: { type: "string" },
+    matchedRequirements: conciseStringArray,
+    missingRequirements: conciseStringArray,
+    supportingEvidence: conciseStringArray,
+    summary: { type: "string", maxLength: 400 },
     needsHumanReview: { type: "boolean" },
   },
   required: [

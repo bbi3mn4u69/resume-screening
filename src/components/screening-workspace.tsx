@@ -167,7 +167,9 @@ function RunProgress({ run }: { run: Run }) {
             </CardTitle>
             <CardDescription className="mt-1">
               Local filtering and evidence compression are complete. Groq is
-              reviewing only the reduced shortlist.
+              reviewing only the reduced shortlist. Requests are paced at up to
+              30 per minute and pause together when Groq reports a token
+              cooldown.
             </CardDescription>
           </div>
           <Badge variant="outline">{percent}%</Badge>
@@ -213,6 +215,51 @@ function RunProgress({ run }: { run: Run }) {
               {run.inputReductionPercent}%
             </p>
           </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function InterruptedRun({
+  error,
+  retry,
+  retrying,
+}: {
+  error?: string;
+  retry: () => void;
+  retrying: boolean;
+}) {
+  return (
+    <Card className="border-destructive/30">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <AlertTriangleIcon className="text-destructive size-4" />
+          Screening was interrupted
+        </CardTitle>
+        <CardDescription>
+          The screening request is no longer running. Completed candidate
+          results are preserved, and retrying continues with pending resumes.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="grid gap-4">
+        {error && (
+          <Alert variant="destructive">
+            <AlertTriangleIcon />
+            <AlertTitle>Database or server request failed</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        <div>
+          <Button onClick={retry} disabled={retrying}>
+            {retrying ? (
+              <>
+                <LoaderCircleIcon className="animate-spin" /> Retrying…
+              </>
+            ) : (
+              "Retry pending resumes"
+            )}
+          </Button>
         </div>
       </CardContent>
     </Card>
@@ -541,7 +588,7 @@ function RunResults({
                   {run.inputReductionPercent}%
                 </p>
                 <p className="text-muted-foreground mt-1 text-xs">
-                  Output is capped at 1,000 tokens per candidate
+                  Output is capped at 500 tokens per candidate
                 </p>
               </div>
             </div>
@@ -550,7 +597,7 @@ function RunResults({
               <AlertTitle>Evidence-focused compression</AlertTitle>
               <AlertDescription>
                 Groq receives the highest-scoring job-related excerpts, capped
-                at 6,000 characters per resume. Review the original application
+                at 2,000 characters per resume. Review the original application
                 before making any decision.
               </AlertDescription>
             </Alert>
@@ -743,6 +790,13 @@ export function ScreeningWorkspace() {
     });
   }
 
+  function retryRun() {
+    if (!selectedRunId) return;
+    processRun.reset();
+    setActiveRunId(selectedRunId);
+    processRun.mutate({ id: selectedRunId });
+  }
+
   function viewRun(id: string) {
     setSelectedRunId(id);
     setTab("screen");
@@ -902,8 +956,9 @@ export function ScreeningWorkspace() {
                       <AlertDescription>
                         The job-type filter runs first. Local relevance ranking
                         then removes zero-evidence resumes, keeps a 10-candidate
-                        review floor, and sends at most 6,000 relevant
-                        characters per selected resume.
+                        review floor, selects at most{" "}
+                        {config.data?.maxResumes ?? 25}, and sends at most 2,000
+                        relevant characters per selected resume.
                       </AlertDescription>
                     </Alert>
                     <Button
@@ -1069,8 +1124,15 @@ export function ScreeningWorkspace() {
               />
             ) : run.isLoading ? (
               <Skeleton className="h-96 w-full" />
-            ) : run.data?.status === "PROCESSING" ? (
+            ) : run.data?.status === "PROCESSING" &&
+              activeRunId === run.data.id ? (
               <RunProgress run={run.data} />
+            ) : run.data?.status === "PROCESSING" ? (
+              <InterruptedRun
+                error={processRun.error?.message}
+                retry={retryRun}
+                retrying={processRun.isPending}
+              />
             ) : run.data ? (
               <RunResults
                 key={run.data.id}
