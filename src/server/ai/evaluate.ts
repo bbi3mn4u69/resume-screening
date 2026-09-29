@@ -13,8 +13,13 @@ import {
   jobProfileSystemPrompt,
   screeningSystemPrompt,
 } from "~/server/ai/prompts";
+import {
+  canonicalizeJobProfile,
+  serializeCanonicalJobProfile,
+} from "~/server/ai/canonical-profile";
 import { groqRequestScheduler } from "~/server/ai/groq-request-scheduler";
 import { generateWithJsonFallback } from "~/server/ai/structured-output";
+import { normalizeTokenUsage } from "~/server/ai/token-usage";
 
 function model() {
   if (!env.GROQ_API_KEY) {
@@ -61,7 +66,7 @@ export async function extractJobProfile(title: string, description: string) {
     system: jobProfileSystemPrompt,
     prompt: `JOB TITLE:\n${title}\n\nJOB DESCRIPTION:\n${description}`,
   } as const;
-  const { output } = await generateWithJsonFallback(
+  const { output, usage } = await generateWithJsonFallback(
     () =>
       groqRequestScheduler.run(() =>
         generateText({ ...request, ...options(1_800, true) }),
@@ -71,7 +76,10 @@ export async function extractJobProfile(title: string, description: string) {
         generateText({ ...request, ...options(1_800, false) }),
       ),
   );
-  return jobProfileSchema.parse(output);
+  return {
+    profile: canonicalizeJobProfile(jobProfileSchema.parse(output)),
+    usage: normalizeTokenUsage(usage),
+  };
 }
 
 export async function evaluateCandidate(
@@ -85,9 +93,9 @@ export async function evaluateCandidate(
       schema: candidateAssessmentSchema,
     }),
     system: screeningSystemPrompt,
-    prompt: `JOB PROFILE:\n${JSON.stringify(profile)}\n\nRESUME EVIDENCE:\n${resumeText.slice(0, 2_000)}`,
+    prompt: `JOB PROFILE:\n${serializeCanonicalJobProfile(profile)}\n\nCANDIDATE EVIDENCE:\n${resumeText.slice(0, 2_000)}`,
   } as const;
-  const { output } = await generateWithJsonFallback(
+  const { output, usage } = await generateWithJsonFallback(
     () =>
       groqRequestScheduler.run(() =>
         generateText({ ...request, ...options(500, true) }),
@@ -97,5 +105,8 @@ export async function evaluateCandidate(
         generateText({ ...request, ...options(500, false) }),
       ),
   );
-  return candidateAssessmentSchema.parse(output);
+  return {
+    assessment: candidateAssessmentSchema.parse(output),
+    usage: normalizeTokenUsage(usage),
+  };
 }

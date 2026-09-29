@@ -183,8 +183,9 @@ export const screeningRouter = createTRPCRouter({
           message: `No resumes are available for ${input.datasetCategory ?? "the selected job type"}.`,
         });
       }
-      const profile = jobProfileSchema.parse(
-        await extractJobProfile(input.jobTitle, input.jobDescription),
+      const { profile, usage: profileUsage } = await extractJobProfile(
+        input.jobTitle,
+        input.jobDescription,
       );
       const ranked = selectCandidatesForScreening(
         profile,
@@ -223,6 +224,11 @@ export const screeningRouter = createTRPCRouter({
           totalCandidates: resumes.length,
           originalInputCharacters,
           filteredInputCharacters,
+          inputTokens: profileUsage.inputTokens,
+          cachedInputTokens: profileUsage.cachedInputTokens,
+          uncachedInputTokens: profileUsage.uncachedInputTokens,
+          outputTokens: profileUsage.outputTokens,
+          aiRequestCount: profileUsage.requestCount,
           startedAt: new Date(),
           job: {
             create: {
@@ -288,11 +294,16 @@ export const screeningRouter = createTRPCRouter({
               while (cursor < resumes.length) {
                 const resume = resumes[cursor++];
                 if (!resume) break;
+                let tokenUsage:
+                  | Awaited<ReturnType<typeof evaluateCandidate>>["usage"]
+                  | undefined;
                 try {
-                  const assessment = await evaluateCandidate(
+                  const result = await evaluateCandidate(
                     profile,
                     buildRelevantResumeExcerpt(profile, resume.sanitizedText),
                   );
+                  const { assessment } = result;
+                  tokenUsage = result.usage;
                   const fitScore = Math.round(assessment.fitScore);
                   await ctx.db.resumeEvaluation.update({
                     where: {
@@ -337,7 +348,28 @@ export const screeningRouter = createTRPCRouter({
                 } finally {
                   await ctx.db.screeningRun.update({
                     where: { id: run.id },
-                    data: { processedCount: { increment: 1 } },
+                    data: {
+                      processedCount: { increment: 1 },
+                      ...(tokenUsage
+                        ? {
+                            inputTokens: {
+                              increment: tokenUsage.inputTokens,
+                            },
+                            cachedInputTokens: {
+                              increment: tokenUsage.cachedInputTokens,
+                            },
+                            uncachedInputTokens: {
+                              increment: tokenUsage.uncachedInputTokens,
+                            },
+                            outputTokens: {
+                              increment: tokenUsage.outputTokens,
+                            },
+                            aiRequestCount: {
+                              increment: tokenUsage.requestCount,
+                            },
+                          }
+                        : undefined),
+                    },
                   });
                 }
               }
@@ -399,6 +431,11 @@ export const screeningRouter = createTRPCRouter({
         sourceCandidates: run.sourceCandidates,
         originalInputCharacters: run.originalInputCharacters,
         filteredInputCharacters: run.filteredInputCharacters,
+        inputTokens: run.inputTokens,
+        cachedInputTokens: run.cachedInputTokens,
+        uncachedInputTokens: run.uncachedInputTokens,
+        outputTokens: run.outputTokens,
+        aiRequestCount: run.aiRequestCount,
         inputReductionPercent:
           run.originalInputCharacters === 0
             ? 0

@@ -3511,6 +3511,11 @@ export namespace Prisma {
     sourceCandidates: number | null
     originalInputCharacters: number | null
     filteredInputCharacters: number | null
+    inputTokens: number | null
+    cachedInputTokens: number | null
+    uncachedInputTokens: number | null
+    outputTokens: number | null
+    aiRequestCount: number | null
   }
 
   export type ScreeningRunSumAggregateOutputType = {
@@ -3521,6 +3526,11 @@ export namespace Prisma {
     sourceCandidates: number | null
     originalInputCharacters: number | null
     filteredInputCharacters: number | null
+    inputTokens: number | null
+    cachedInputTokens: number | null
+    uncachedInputTokens: number | null
+    outputTokens: number | null
+    aiRequestCount: number | null
   }
 
   export type ScreeningRunMinAggregateOutputType = {
@@ -3537,6 +3547,11 @@ export namespace Prisma {
     sourceCandidates: number | null
     originalInputCharacters: number | null
     filteredInputCharacters: number | null
+    inputTokens: number | null
+    cachedInputTokens: number | null
+    uncachedInputTokens: number | null
+    outputTokens: number | null
+    aiRequestCount: number | null
     startedAt: Date | null
     completedAt: Date | null
     createdAt: Date | null
@@ -3556,6 +3571,11 @@ export namespace Prisma {
     sourceCandidates: number | null
     originalInputCharacters: number | null
     filteredInputCharacters: number | null
+    inputTokens: number | null
+    cachedInputTokens: number | null
+    uncachedInputTokens: number | null
+    outputTokens: number | null
+    aiRequestCount: number | null
     startedAt: Date | null
     completedAt: Date | null
     createdAt: Date | null
@@ -3575,6 +3595,11 @@ export namespace Prisma {
     sourceCandidates: number
     originalInputCharacters: number
     filteredInputCharacters: number
+    inputTokens: number
+    cachedInputTokens: number
+    uncachedInputTokens: number
+    outputTokens: number
+    aiRequestCount: number
     startedAt: number
     completedAt: number
     createdAt: number
@@ -3590,6 +3615,11 @@ export namespace Prisma {
     sourceCandidates?: true
     originalInputCharacters?: true
     filteredInputCharacters?: true
+    inputTokens?: true
+    cachedInputTokens?: true
+    uncachedInputTokens?: true
+    outputTokens?: true
+    aiRequestCount?: true
   }
 
   export type ScreeningRunSumAggregateInputType = {
@@ -3600,6 +3630,11 @@ export namespace Prisma {
     sourceCandidates?: true
     originalInputCharacters?: true
     filteredInputCharacters?: true
+    inputTokens?: true
+    cachedInputTokens?: true
+    uncachedInputTokens?: true
+    outputTokens?: true
+    aiRequestCount?: true
   }
 
   export type ScreeningRunMinAggregateInputType = {
@@ -3616,6 +3651,11 @@ export namespace Prisma {
     sourceCandidates?: true
     originalInputCharacters?: true
     filteredInputCharacters?: true
+    inputTokens?: true
+    cachedInputTokens?: true
+    uncachedInputTokens?: true
+    outputTokens?: true
+    aiRequestCount?: true
     startedAt?: true
     completedAt?: true
     createdAt?: true
@@ -3635,6 +3675,11 @@ export namespace Prisma {
     sourceCandidates?: true
     originalInputCharacters?: true
     filteredInputCharacters?: true
+    inputTokens?: true
+    cachedInputTokens?: true
+    uncachedInputTokens?: true
+    outputTokens?: true
+    aiRequestCount?: true
     startedAt?: true
     completedAt?: true
     createdAt?: true
@@ -3654,6 +3699,11 @@ export namespace Prisma {
     sourceCandidates?: true
     originalInputCharacters?: true
     filteredInputCharacters?: true
+    inputTokens?: true
+    cachedInputTokens?: true
+    uncachedInputTokens?: true
+    outputTokens?: true
+    aiRequestCount?: true
     startedAt?: true
     completedAt?: true
     createdAt?: true
@@ -3760,6 +3810,11 @@ export namespace Prisma {
     sourceCandidates: number
     originalInputCharacters: number
     filteredInputCharacters: number
+    inputTokens: number
+    cachedInputTokens: number
+    uncachedInputTokens: number
+    outputTokens: number
+    aiRequestCount: number
     startedAt: Date | null
     completedAt: Date | null
     createdAt: Date
@@ -3798,6 +3853,11 @@ export namespace Prisma {
     sourceCandidates?: boolean
     originalInputCharacters?: boolean
     filteredInputCharacters?: boolean
+    inputTokens?: boolean
+    cachedInputTokens?: boolean
+    uncachedInputTokens?: boolean
+    outputTokens?: boolean
+    aiRequestCount?: boolean
     startedAt?: boolean
     completedAt?: boolean
     createdAt?: boolean
@@ -3820,6 +3880,11 @@ export namespace Prisma {
     sourceCandidates?: boolean
     originalInputCharacters?: boolean
     filteredInputCharacters?: boolean
+    inputTokens?: boolean
+    cachedInputTokens?: boolean
+    uncachedInputTokens?: boolean
+    outputTokens?: boolean
+    aiRequestCount?: boolean
     startedAt?: boolean
     completedAt?: boolean
     createdAt?: boolean
@@ -3840,6 +3905,11 @@ export namespace Prisma {
     sourceCandidates?: boolean
     originalInputCharacters?: boolean
     filteredInputCharacters?: boolean
+    inputTokens?: boolean
+    cachedInputTokens?: boolean
+    uncachedInputTokens?: boolean
+    outputTokens?: boolean
+    aiRequestCount?: boolean
     startedAt?: boolean
     completedAt?: boolean
     createdAt?: boolean
@@ -3860,12 +3930,17 @@ export namespace Prisma {
     sourceCandidates?: boolean
     originalInputCharacters?: boolean
     filteredInputCharacters?: boolean
+    inputTokens?: boolean
+    cachedInputTokens?: boolean
+    uncachedInputTokens?: boolean
+    outputTokens?: boolean
+    aiRequestCount?: boolean
     startedAt?: boolean
     completedAt?: boolean
     createdAt?: boolean
   }
 
-  export type ScreeningRunOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "jobId" | "status" | "modelName" | "promptVersion" | "totalCandidates" | "processedCount" | "failedCount" | "datasetCategory" | "datasetCandidates" | "sourceCandidates" | "originalInputCharacters" | "filteredInputCharacters" | "startedAt" | "completedAt" | "createdAt", ExtArgs["result"]["screeningRun"]>
+  export type ScreeningRunOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "jobId" | "status" | "modelName" | "promptVersion" | "totalCandidates" | "processedCount" | "failedCount" | "datasetCategory" | "datasetCandidates" | "sourceCandidates" | "originalInputCharacters" | "filteredInputCharacters" | "inputTokens" | "cachedInputTokens" | "uncachedInputTokens" | "outputTokens" | "aiRequestCount" | "startedAt" | "completedAt" | "createdAt", ExtArgs["result"]["screeningRun"]>
   export type ScreeningRunInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     job?: boolean | JobDefaultArgs<ExtArgs>
     evaluations?: boolean | ScreeningRun$evaluationsArgs<ExtArgs>
@@ -3898,6 +3973,11 @@ export namespace Prisma {
       sourceCandidates: number
       originalInputCharacters: number
       filteredInputCharacters: number
+      inputTokens: number
+      cachedInputTokens: number
+      uncachedInputTokens: number
+      outputTokens: number
+      aiRequestCount: number
       startedAt: Date | null
       completedAt: Date | null
       createdAt: Date
@@ -4339,6 +4419,11 @@ export namespace Prisma {
     readonly sourceCandidates: FieldRef<"ScreeningRun", 'Int'>
     readonly originalInputCharacters: FieldRef<"ScreeningRun", 'Int'>
     readonly filteredInputCharacters: FieldRef<"ScreeningRun", 'Int'>
+    readonly inputTokens: FieldRef<"ScreeningRun", 'Int'>
+    readonly cachedInputTokens: FieldRef<"ScreeningRun", 'Int'>
+    readonly uncachedInputTokens: FieldRef<"ScreeningRun", 'Int'>
+    readonly outputTokens: FieldRef<"ScreeningRun", 'Int'>
+    readonly aiRequestCount: FieldRef<"ScreeningRun", 'Int'>
     readonly startedAt: FieldRef<"ScreeningRun", 'DateTime'>
     readonly completedAt: FieldRef<"ScreeningRun", 'DateTime'>
     readonly createdAt: FieldRef<"ScreeningRun", 'DateTime'>
@@ -6088,6 +6173,11 @@ export namespace Prisma {
     sourceCandidates: 'sourceCandidates',
     originalInputCharacters: 'originalInputCharacters',
     filteredInputCharacters: 'filteredInputCharacters',
+    inputTokens: 'inputTokens',
+    cachedInputTokens: 'cachedInputTokens',
+    uncachedInputTokens: 'uncachedInputTokens',
+    outputTokens: 'outputTokens',
+    aiRequestCount: 'aiRequestCount',
     startedAt: 'startedAt',
     completedAt: 'completedAt',
     createdAt: 'createdAt'
@@ -6378,6 +6468,11 @@ export namespace Prisma {
     sourceCandidates?: IntFilter<"ScreeningRun"> | number
     originalInputCharacters?: IntFilter<"ScreeningRun"> | number
     filteredInputCharacters?: IntFilter<"ScreeningRun"> | number
+    inputTokens?: IntFilter<"ScreeningRun"> | number
+    cachedInputTokens?: IntFilter<"ScreeningRun"> | number
+    uncachedInputTokens?: IntFilter<"ScreeningRun"> | number
+    outputTokens?: IntFilter<"ScreeningRun"> | number
+    aiRequestCount?: IntFilter<"ScreeningRun"> | number
     startedAt?: DateTimeNullableFilter<"ScreeningRun"> | Date | string | null
     completedAt?: DateTimeNullableFilter<"ScreeningRun"> | Date | string | null
     createdAt?: DateTimeFilter<"ScreeningRun"> | Date | string
@@ -6399,6 +6494,11 @@ export namespace Prisma {
     sourceCandidates?: SortOrder
     originalInputCharacters?: SortOrder
     filteredInputCharacters?: SortOrder
+    inputTokens?: SortOrder
+    cachedInputTokens?: SortOrder
+    uncachedInputTokens?: SortOrder
+    outputTokens?: SortOrder
+    aiRequestCount?: SortOrder
     startedAt?: SortOrderInput | SortOrder
     completedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -6423,6 +6523,11 @@ export namespace Prisma {
     sourceCandidates?: IntFilter<"ScreeningRun"> | number
     originalInputCharacters?: IntFilter<"ScreeningRun"> | number
     filteredInputCharacters?: IntFilter<"ScreeningRun"> | number
+    inputTokens?: IntFilter<"ScreeningRun"> | number
+    cachedInputTokens?: IntFilter<"ScreeningRun"> | number
+    uncachedInputTokens?: IntFilter<"ScreeningRun"> | number
+    outputTokens?: IntFilter<"ScreeningRun"> | number
+    aiRequestCount?: IntFilter<"ScreeningRun"> | number
     startedAt?: DateTimeNullableFilter<"ScreeningRun"> | Date | string | null
     completedAt?: DateTimeNullableFilter<"ScreeningRun"> | Date | string | null
     createdAt?: DateTimeFilter<"ScreeningRun"> | Date | string
@@ -6444,6 +6549,11 @@ export namespace Prisma {
     sourceCandidates?: SortOrder
     originalInputCharacters?: SortOrder
     filteredInputCharacters?: SortOrder
+    inputTokens?: SortOrder
+    cachedInputTokens?: SortOrder
+    uncachedInputTokens?: SortOrder
+    outputTokens?: SortOrder
+    aiRequestCount?: SortOrder
     startedAt?: SortOrderInput | SortOrder
     completedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -6471,6 +6581,11 @@ export namespace Prisma {
     sourceCandidates?: IntWithAggregatesFilter<"ScreeningRun"> | number
     originalInputCharacters?: IntWithAggregatesFilter<"ScreeningRun"> | number
     filteredInputCharacters?: IntWithAggregatesFilter<"ScreeningRun"> | number
+    inputTokens?: IntWithAggregatesFilter<"ScreeningRun"> | number
+    cachedInputTokens?: IntWithAggregatesFilter<"ScreeningRun"> | number
+    uncachedInputTokens?: IntWithAggregatesFilter<"ScreeningRun"> | number
+    outputTokens?: IntWithAggregatesFilter<"ScreeningRun"> | number
+    aiRequestCount?: IntWithAggregatesFilter<"ScreeningRun"> | number
     startedAt?: DateTimeNullableWithAggregatesFilter<"ScreeningRun"> | Date | string | null
     completedAt?: DateTimeNullableWithAggregatesFilter<"ScreeningRun"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"ScreeningRun"> | Date | string
@@ -6774,6 +6889,11 @@ export namespace Prisma {
     sourceCandidates?: number
     originalInputCharacters?: number
     filteredInputCharacters?: number
+    inputTokens?: number
+    cachedInputTokens?: number
+    uncachedInputTokens?: number
+    outputTokens?: number
+    aiRequestCount?: number
     startedAt?: Date | string | null
     completedAt?: Date | string | null
     createdAt?: Date | string
@@ -6795,6 +6915,11 @@ export namespace Prisma {
     sourceCandidates?: number
     originalInputCharacters?: number
     filteredInputCharacters?: number
+    inputTokens?: number
+    cachedInputTokens?: number
+    uncachedInputTokens?: number
+    outputTokens?: number
+    aiRequestCount?: number
     startedAt?: Date | string | null
     completedAt?: Date | string | null
     createdAt?: Date | string
@@ -6814,6 +6939,11 @@ export namespace Prisma {
     sourceCandidates?: IntFieldUpdateOperationsInput | number
     originalInputCharacters?: IntFieldUpdateOperationsInput | number
     filteredInputCharacters?: IntFieldUpdateOperationsInput | number
+    inputTokens?: IntFieldUpdateOperationsInput | number
+    cachedInputTokens?: IntFieldUpdateOperationsInput | number
+    uncachedInputTokens?: IntFieldUpdateOperationsInput | number
+    outputTokens?: IntFieldUpdateOperationsInput | number
+    aiRequestCount?: IntFieldUpdateOperationsInput | number
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -6835,6 +6965,11 @@ export namespace Prisma {
     sourceCandidates?: IntFieldUpdateOperationsInput | number
     originalInputCharacters?: IntFieldUpdateOperationsInput | number
     filteredInputCharacters?: IntFieldUpdateOperationsInput | number
+    inputTokens?: IntFieldUpdateOperationsInput | number
+    cachedInputTokens?: IntFieldUpdateOperationsInput | number
+    uncachedInputTokens?: IntFieldUpdateOperationsInput | number
+    outputTokens?: IntFieldUpdateOperationsInput | number
+    aiRequestCount?: IntFieldUpdateOperationsInput | number
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -6855,6 +6990,11 @@ export namespace Prisma {
     sourceCandidates?: number
     originalInputCharacters?: number
     filteredInputCharacters?: number
+    inputTokens?: number
+    cachedInputTokens?: number
+    uncachedInputTokens?: number
+    outputTokens?: number
+    aiRequestCount?: number
     startedAt?: Date | string | null
     completedAt?: Date | string | null
     createdAt?: Date | string
@@ -6873,6 +7013,11 @@ export namespace Prisma {
     sourceCandidates?: IntFieldUpdateOperationsInput | number
     originalInputCharacters?: IntFieldUpdateOperationsInput | number
     filteredInputCharacters?: IntFieldUpdateOperationsInput | number
+    inputTokens?: IntFieldUpdateOperationsInput | number
+    cachedInputTokens?: IntFieldUpdateOperationsInput | number
+    uncachedInputTokens?: IntFieldUpdateOperationsInput | number
+    outputTokens?: IntFieldUpdateOperationsInput | number
+    aiRequestCount?: IntFieldUpdateOperationsInput | number
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -6892,6 +7037,11 @@ export namespace Prisma {
     sourceCandidates?: IntFieldUpdateOperationsInput | number
     originalInputCharacters?: IntFieldUpdateOperationsInput | number
     filteredInputCharacters?: IntFieldUpdateOperationsInput | number
+    inputTokens?: IntFieldUpdateOperationsInput | number
+    cachedInputTokens?: IntFieldUpdateOperationsInput | number
+    uncachedInputTokens?: IntFieldUpdateOperationsInput | number
+    outputTokens?: IntFieldUpdateOperationsInput | number
+    aiRequestCount?: IntFieldUpdateOperationsInput | number
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -7294,6 +7444,11 @@ export namespace Prisma {
     sourceCandidates?: SortOrder
     originalInputCharacters?: SortOrder
     filteredInputCharacters?: SortOrder
+    inputTokens?: SortOrder
+    cachedInputTokens?: SortOrder
+    uncachedInputTokens?: SortOrder
+    outputTokens?: SortOrder
+    aiRequestCount?: SortOrder
     startedAt?: SortOrder
     completedAt?: SortOrder
     createdAt?: SortOrder
@@ -7307,6 +7462,11 @@ export namespace Prisma {
     sourceCandidates?: SortOrder
     originalInputCharacters?: SortOrder
     filteredInputCharacters?: SortOrder
+    inputTokens?: SortOrder
+    cachedInputTokens?: SortOrder
+    uncachedInputTokens?: SortOrder
+    outputTokens?: SortOrder
+    aiRequestCount?: SortOrder
   }
 
   export type ScreeningRunMaxOrderByAggregateInput = {
@@ -7323,6 +7483,11 @@ export namespace Prisma {
     sourceCandidates?: SortOrder
     originalInputCharacters?: SortOrder
     filteredInputCharacters?: SortOrder
+    inputTokens?: SortOrder
+    cachedInputTokens?: SortOrder
+    uncachedInputTokens?: SortOrder
+    outputTokens?: SortOrder
+    aiRequestCount?: SortOrder
     startedAt?: SortOrder
     completedAt?: SortOrder
     createdAt?: SortOrder
@@ -7342,6 +7507,11 @@ export namespace Prisma {
     sourceCandidates?: SortOrder
     originalInputCharacters?: SortOrder
     filteredInputCharacters?: SortOrder
+    inputTokens?: SortOrder
+    cachedInputTokens?: SortOrder
+    uncachedInputTokens?: SortOrder
+    outputTokens?: SortOrder
+    aiRequestCount?: SortOrder
     startedAt?: SortOrder
     completedAt?: SortOrder
     createdAt?: SortOrder
@@ -7355,6 +7525,11 @@ export namespace Prisma {
     sourceCandidates?: SortOrder
     originalInputCharacters?: SortOrder
     filteredInputCharacters?: SortOrder
+    inputTokens?: SortOrder
+    cachedInputTokens?: SortOrder
+    uncachedInputTokens?: SortOrder
+    outputTokens?: SortOrder
+    aiRequestCount?: SortOrder
   }
 
   export type IntWithAggregatesFilter<$PrismaModel = never> = {
@@ -8037,6 +8212,11 @@ export namespace Prisma {
     sourceCandidates?: number
     originalInputCharacters?: number
     filteredInputCharacters?: number
+    inputTokens?: number
+    cachedInputTokens?: number
+    uncachedInputTokens?: number
+    outputTokens?: number
+    aiRequestCount?: number
     startedAt?: Date | string | null
     completedAt?: Date | string | null
     createdAt?: Date | string
@@ -8056,6 +8236,11 @@ export namespace Prisma {
     sourceCandidates?: number
     originalInputCharacters?: number
     filteredInputCharacters?: number
+    inputTokens?: number
+    cachedInputTokens?: number
+    uncachedInputTokens?: number
+    outputTokens?: number
+    aiRequestCount?: number
     startedAt?: Date | string | null
     completedAt?: Date | string | null
     createdAt?: Date | string
@@ -8105,6 +8290,11 @@ export namespace Prisma {
     sourceCandidates?: IntFilter<"ScreeningRun"> | number
     originalInputCharacters?: IntFilter<"ScreeningRun"> | number
     filteredInputCharacters?: IntFilter<"ScreeningRun"> | number
+    inputTokens?: IntFilter<"ScreeningRun"> | number
+    cachedInputTokens?: IntFilter<"ScreeningRun"> | number
+    uncachedInputTokens?: IntFilter<"ScreeningRun"> | number
+    outputTokens?: IntFilter<"ScreeningRun"> | number
+    aiRequestCount?: IntFilter<"ScreeningRun"> | number
     startedAt?: DateTimeNullableFilter<"ScreeningRun"> | Date | string | null
     completedAt?: DateTimeNullableFilter<"ScreeningRun"> | Date | string | null
     createdAt?: DateTimeFilter<"ScreeningRun"> | Date | string
@@ -8237,6 +8427,11 @@ export namespace Prisma {
     sourceCandidates?: number
     originalInputCharacters?: number
     filteredInputCharacters?: number
+    inputTokens?: number
+    cachedInputTokens?: number
+    uncachedInputTokens?: number
+    outputTokens?: number
+    aiRequestCount?: number
     startedAt?: Date | string | null
     completedAt?: Date | string | null
     createdAt?: Date | string
@@ -8257,6 +8452,11 @@ export namespace Prisma {
     sourceCandidates?: number
     originalInputCharacters?: number
     filteredInputCharacters?: number
+    inputTokens?: number
+    cachedInputTokens?: number
+    uncachedInputTokens?: number
+    outputTokens?: number
+    aiRequestCount?: number
     startedAt?: Date | string | null
     completedAt?: Date | string | null
     createdAt?: Date | string
@@ -8324,6 +8524,11 @@ export namespace Prisma {
     sourceCandidates?: IntFieldUpdateOperationsInput | number
     originalInputCharacters?: IntFieldUpdateOperationsInput | number
     filteredInputCharacters?: IntFieldUpdateOperationsInput | number
+    inputTokens?: IntFieldUpdateOperationsInput | number
+    cachedInputTokens?: IntFieldUpdateOperationsInput | number
+    uncachedInputTokens?: IntFieldUpdateOperationsInput | number
+    outputTokens?: IntFieldUpdateOperationsInput | number
+    aiRequestCount?: IntFieldUpdateOperationsInput | number
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -8344,6 +8549,11 @@ export namespace Prisma {
     sourceCandidates?: IntFieldUpdateOperationsInput | number
     originalInputCharacters?: IntFieldUpdateOperationsInput | number
     filteredInputCharacters?: IntFieldUpdateOperationsInput | number
+    inputTokens?: IntFieldUpdateOperationsInput | number
+    cachedInputTokens?: IntFieldUpdateOperationsInput | number
+    uncachedInputTokens?: IntFieldUpdateOperationsInput | number
+    outputTokens?: IntFieldUpdateOperationsInput | number
+    aiRequestCount?: IntFieldUpdateOperationsInput | number
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -8473,6 +8683,11 @@ export namespace Prisma {
     sourceCandidates?: number
     originalInputCharacters?: number
     filteredInputCharacters?: number
+    inputTokens?: number
+    cachedInputTokens?: number
+    uncachedInputTokens?: number
+    outputTokens?: number
+    aiRequestCount?: number
     startedAt?: Date | string | null
     completedAt?: Date | string | null
     createdAt?: Date | string
@@ -8491,6 +8706,11 @@ export namespace Prisma {
     sourceCandidates?: IntFieldUpdateOperationsInput | number
     originalInputCharacters?: IntFieldUpdateOperationsInput | number
     filteredInputCharacters?: IntFieldUpdateOperationsInput | number
+    inputTokens?: IntFieldUpdateOperationsInput | number
+    cachedInputTokens?: IntFieldUpdateOperationsInput | number
+    uncachedInputTokens?: IntFieldUpdateOperationsInput | number
+    outputTokens?: IntFieldUpdateOperationsInput | number
+    aiRequestCount?: IntFieldUpdateOperationsInput | number
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -8510,6 +8730,11 @@ export namespace Prisma {
     sourceCandidates?: IntFieldUpdateOperationsInput | number
     originalInputCharacters?: IntFieldUpdateOperationsInput | number
     filteredInputCharacters?: IntFieldUpdateOperationsInput | number
+    inputTokens?: IntFieldUpdateOperationsInput | number
+    cachedInputTokens?: IntFieldUpdateOperationsInput | number
+    uncachedInputTokens?: IntFieldUpdateOperationsInput | number
+    outputTokens?: IntFieldUpdateOperationsInput | number
+    aiRequestCount?: IntFieldUpdateOperationsInput | number
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -8529,6 +8754,11 @@ export namespace Prisma {
     sourceCandidates?: IntFieldUpdateOperationsInput | number
     originalInputCharacters?: IntFieldUpdateOperationsInput | number
     filteredInputCharacters?: IntFieldUpdateOperationsInput | number
+    inputTokens?: IntFieldUpdateOperationsInput | number
+    cachedInputTokens?: IntFieldUpdateOperationsInput | number
+    uncachedInputTokens?: IntFieldUpdateOperationsInput | number
+    outputTokens?: IntFieldUpdateOperationsInput | number
+    aiRequestCount?: IntFieldUpdateOperationsInput | number
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string

@@ -54,6 +54,11 @@ model ScreeningRun {
   sourceCandidates        Int       @default(0)
   originalInputCharacters Int       @default(0)
   filteredInputCharacters Int       @default(0)
+  inputTokens             Int       @default(0)
+  cachedInputTokens       Int       @default(0)
+  uncachedInputTokens     Int       @default(0)
+  outputTokens            Int       @default(0)
+  aiRequestCount          Int       @default(0)
   startedAt               DateTime?
   completedAt             DateTime?
   createdAt               DateTime  @default(now())

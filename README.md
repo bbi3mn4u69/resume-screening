@@ -244,6 +244,8 @@ For each shortlisted resume, local weighted fragment ranking keeps the text most
 
 The repeated candidate system prompt was also condensed in v5 while preserving its evidence, fairness, scoring, confidence, human-review, and structured-output rules. Because that prompt is sent for every candidate, removing duplicated prose saves input on every request.
 
+The extracted job profile is canonicalized once: whitespace is normalized, duplicate requirements are removed without changing their first-seen order, and fields are serialized in a fixed compact order. Every assessment request places the unchanged system prompt, structured-output schema, and canonical job profile before the candidate-specific evidence. This exact-prefix layout allows Groq's automatic prompt cache to reuse the repeated portion while keeping each candidate evaluation independent.
+
 ### 4. Reduce output allowance
 
 The candidate schema needs only a score, confidence, three arrays capped at four short items, a summary capped at 400 characters, and a review flag. Candidate output is therefore capped at 500 tokens. Job-profile extraction has a separate 1,800-token cap because its schema can contain more requirement arrays.
@@ -258,9 +260,12 @@ Each new run stores:
 - selected dataset job type and the number of source resumes remaining after that filter,
 - resumes selected for Groq,
 - total characters across the selected full sanitized resumes, and
-- total characters after evidence compression.
+- total characters after evidence compression,
+- provider-reported input and output tokens,
+- cached and uncached input tokens, and
+- the number of successful AI requests represented by those totals.
 
-The UI shows shortlist reduction, input-character reduction, approximate before/after tokens, and real candidate progress. The token estimate uses `ceil(characters / 4)` and is intentionally labelled approximate; provider billing is authoritative.
+The UI keeps the approximate resume-text estimate for comparing local compression, then separately shows authoritative provider totals and the calculated prompt-cache hit rate. Provider usage includes the system prompt, structured schema, job profile, and evidence rather than only resume characters.
 
 ### Recall and fairness tradeoff
 
@@ -570,6 +575,11 @@ erDiagram
         int sourceCandidates
         int originalInputCharacters
         int filteredInputCharacters
+        int inputTokens
+        int cachedInputTokens
+        int uncachedInputTokens
+        int outputTokens
+        int aiRequestCount
         datetime startedAt
         datetime completedAt
         datetime createdAt
@@ -910,7 +920,7 @@ The free-tier default sends the top 25 locally ranked candidates, with 2,000 evi
 - Candidate output is capped at 500 tokens; job-profile output is capped at 1,800.
 - Requests time out after 60 seconds.
 - History views reuse stored results.
-- Each run stores measured before/after input characters and exposes an approximate token count using four characters per token.
+- Each run stores measured before/after input characters plus provider-reported total input, cached input, uncached input, output, and successful request counts.
 
 One run normally requires one job-profile request plus one assessment request for each shortlisted resume, excluding provider retries and the JSON fallback.
 
@@ -922,7 +932,7 @@ When one candidate fails, its evaluation becomes `FAILED`, a shortened error is 
 
 `createRun` validates the dataset job-type pool, performs profile extraction and local preparation, then returns the run ID. The browser starts `processRun` and polls `screening.run` every 1.2 seconds while the run is active. The progress card therefore reflects persisted candidate completions. It also shows full dataset size, job-type pool size, shortlisted candidates, and measured input reduction.
 
-The displayed token total is an estimate based on approximately four characters per token. Actual billing depends on the model tokenizer, the job profile, system prompt, provider formatting, retries, and generated output.
+The resume-compression comparison remains an estimate based on approximately four characters per token. The second metrics row is populated from Groq usage returned through the AI SDK and is the authoritative measurement for successful requests. Historical runs created before the provider-token migration show only the estimate.
 
 ## Security and privacy
 

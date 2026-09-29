@@ -470,6 +470,10 @@ function RunResults({
       ],
     ),
   );
+  const cacheHitPercent =
+    run.inputTokens === 0
+      ? 0
+      : Math.round((run.cachedInputTokens / run.inputTokens) * 100);
   return (
     <div className="grid gap-6">
       <Card>
@@ -592,15 +596,55 @@ function RunResults({
                 </p>
               </div>
             </div>
-            <Alert>
-              <ListFilterIcon />
-              <AlertTitle>Evidence-focused compression</AlertTitle>
-              <AlertDescription>
-                Groq receives the highest-scoring job-related excerpts, capped
-                at 2,000 characters per resume. Review the original application
-                before making any decision.
-              </AlertDescription>
-            </Alert>
+            {run.aiRequestCount > 0 && (
+              <div className="grid overflow-hidden rounded-lg border md:grid-cols-4">
+                <div className="border-b p-5 md:border-r md:border-b-0">
+                  <p className="text-muted-foreground text-xs font-medium uppercase">
+                    Actual input
+                  </p>
+                  <p className="mt-1 font-mono text-2xl font-semibold">
+                    {run.inputTokens.toLocaleString()}
+                  </p>
+                  <p className="text-muted-foreground mt-1 text-xs">
+                    Across {run.aiRequestCount.toLocaleString()} successful
+                    requests
+                  </p>
+                </div>
+                <div className="border-b p-5 md:border-r md:border-b-0">
+                  <p className="text-muted-foreground text-xs font-medium uppercase">
+                    Cached input
+                  </p>
+                  <p className="mt-1 font-mono text-2xl font-semibold">
+                    {run.cachedInputTokens.toLocaleString()}
+                  </p>
+                  <p className="text-muted-foreground mt-1 text-xs">
+                    {cacheHitPercent}% cache hit
+                  </p>
+                </div>
+                <div className="border-b p-5 md:border-r md:border-b-0">
+                  <p className="text-muted-foreground text-xs font-medium uppercase">
+                    Uncached input
+                  </p>
+                  <p className="mt-1 font-mono text-2xl font-semibold">
+                    {run.uncachedInputTokens.toLocaleString()}
+                  </p>
+                  <p className="text-muted-foreground mt-1 text-xs">
+                    Counts toward Groq token limits
+                  </p>
+                </div>
+                <div className="p-5">
+                  <p className="text-muted-foreground text-xs font-medium uppercase">
+                    Actual output
+                  </p>
+                  <p className="mt-1 font-mono text-2xl font-semibold">
+                    {run.outputTokens.toLocaleString()}
+                  </p>
+                  <p className="text-muted-foreground mt-1 text-xs">
+                    Provider-reported completion tokens
+                  </p>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
@@ -829,11 +873,6 @@ export function ScreeningWorkspace() {
           <h1 className="text-3xl font-semibold tracking-[-0.035em] md:text-4xl">
             Find the strongest evidence for a real role.
           </h1>
-          <p className="text-muted-foreground mt-3 max-w-2xl text-base leading-7">
-            Paste a genuine job advertisement. ClearScreen ranks the fixed
-            resume corpus, sends the strongest candidates to Groq, and keeps
-            every processed ad available for review.
-          </p>
         </div>
 
         <Tabs
@@ -942,25 +981,6 @@ export function ScreeningWorkspace() {
                         </FieldDescription>
                       </Field>
                     </FieldGroup>
-                    <Alert>
-                      <ShieldCheckIcon />
-                      <AlertTitle>Decision support only</AlertTitle>
-                      <AlertDescription>
-                        Sensitive contact details are redacted before model
-                        evaluation. Category labels are not sent to Groq.
-                      </AlertDescription>
-                    </Alert>
-                    <Alert>
-                      <ListFilterIcon />
-                      <AlertTitle>Token-aware screening</AlertTitle>
-                      <AlertDescription>
-                        The job-type filter runs first. Local relevance ranking
-                        then removes zero-evidence resumes, keeps a 10-candidate
-                        review floor, selects at most{" "}
-                        {config.data?.maxResumes ?? 25}, and sends at most 2,000
-                        relevant characters per selected resume.
-                      </AlertDescription>
-                    </Alert>
                     <Button
                       type="submit"
                       size="lg"

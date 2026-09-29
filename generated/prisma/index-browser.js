@@ -158,6 +158,11 @@ exports.Prisma.ScreeningRunScalarFieldEnum = {
   sourceCandidates: 'sourceCandidates',
   originalInputCharacters: 'originalInputCharacters',
   filteredInputCharacters: 'filteredInputCharacters',
+  inputTokens: 'inputTokens',
+  cachedInputTokens: 'cachedInputTokens',
+  uncachedInputTokens: 'uncachedInputTokens',
+  outputTokens: 'outputTokens',
+  aiRequestCount: 'aiRequestCount',
   startedAt: 'startedAt',
   completedAt: 'completedAt',
   createdAt: 'createdAt'
